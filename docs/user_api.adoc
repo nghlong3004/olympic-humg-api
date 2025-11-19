@@ -1,5 +1,7 @@
 == User API
 
+'''
+
 === Introduction
 
 Module `User` chịu trách nhiệm:
@@ -8,6 +10,8 @@ Module `User` chịu trách nhiệm:
 * Cập nhật thông tin người dùng hiện tại (`PATCH /user/me`).
 * Lấy thông tin chi tiết một user theo ID (`GET /user/{userId}`).
 * Tìm kiếm user theo tên, có phân trang (`GET /user`).
+
+'''
 
 === UserResponse Data Type
 
@@ -31,6 +35,8 @@ Module `User` chịu trách nhiệm:
 | `created` | datetime | Thời điểm tạo
 | `updated` | datetime | Thời điểm cập nhật
 |===
+
+'''
 
 === Get Current User
 
@@ -86,6 +92,8 @@ _401 Unauthorized_
   "details": null
 }
 ----
+
+'''
 
 === Update Current User
 
@@ -181,6 +189,8 @@ _401 Unauthorized_
 }
 ----
 
+'''
+
 === Get User by ID
 
 ==== GET /user/{userId}
@@ -229,17 +239,19 @@ _404 Not Found_
 }
 ----
 
-_401 Unauthorized_
+_403 FORBIDDEN_
 
 [source,json]
 ----
 {
   "timestamp": "2025-02-10T12:30:00",
-  "status": 401,
+  "status": 403,
   "message": "Access denied",
   "details": null
 }
 ----
+
+'''
 
 === Search User
 
@@ -297,13 +309,13 @@ _200 OK_
 }
 ----
 
-_401 Unauthorized_
+_403 FORBIDDEN_
 
 [source,json]
 ----
 {
   "timestamp": "2025-02-10T12:35:00",
-  "status": 401,
+  "status": 403,
   "message": "Access denied",
   "details": null
 }

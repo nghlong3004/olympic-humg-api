@@ -1,5 +1,7 @@
 == Auth API
 
+'''
+
 === Introduction
 
 Module `Auth` chịu trách nhiệm:
@@ -8,12 +10,13 @@ Module `Auth` chịu trách nhiệm:
 * Login.
 * Logout.
 
+'''
+
 === Register
 
 ==== POST /auth/register
 
 Tạo tài khoản mới trong hệ thống.
-Tài khoản mới luôn có `role = STUDENT` (client không được phép truyền role lên).
 
 *Request*
 
@@ -75,7 +78,7 @@ _Data Constraints_
 | `password`
 | string (>= 6)
 | yes
-| Mật khẩu, sẽ được hash trước khi lưu
+| Mật khẩu
 
 | `gender`
 | enum
@@ -107,8 +110,6 @@ _Data Constraints_
 
 _201 Created_
 
-(Server trả về mã 201, có thể không cần body hoặc trả về thông tin user vừa tạo)
-
 _400 Bad Request_
 
 [source,json]
@@ -116,7 +117,7 @@ _400 Bad Request_
 {
   "timestamp": "2025-02-10T10:00:00",
   "status": 400,
-  "message": "Dữ liệu không hợp lệ",
+  "message": "Method Argument Type Mismatch",
   "details": {
     "email": "must be a valid email address",
     "password": "must be at least 6 characters"
@@ -124,24 +125,25 @@ _400 Bad Request_
 }
 ----
 
-_409 Conflict_
+_400 Bad Request_
 
 [source,json]
 ----
 {
   "timestamp": "2025-02-10T10:05:00",
-  "status": 409,
+  "status": 400,
   "message": "Email already exists",
   "details": null
 }
 ----
+
+'''
 
 === Login
 
 ==== POST /auth/login
 
 Đăng nhập vào hệ thống bằng email + password.
-Nếu thành công, server tạo session và gửi cookie `JSESSIONID` về cho client.
 
 *Request*
 
@@ -207,17 +209,18 @@ _401 Unauthorized_
 {
   "timestamp": "2025-02-10T10:10:00",
   "status": 401,
-  "message": "Sai email hoặc mật khẩu",
+  "message": "Method Argument Not Validation",
   "details": null
 }
 ----
+
+'''
 
 === Logout
 
 ==== POST /auth/logout
 
 Huỷ session hiện tại, xoá cookie `JSESSIONID`.
-Yêu cầu user đã đăng nhập.
 
 *Request*
 

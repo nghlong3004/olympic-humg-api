@@ -1,5 +1,6 @@
 == Forum API
 
+'''
 === Introduction
 
 Module `Forum` chịu trách nhiệm:
@@ -7,6 +8,8 @@ Module `Forum` chịu trách nhiệm:
 * Tạo thread thảo luận / đặt câu hỏi / thông báo.
 * Trả về danh sách thread (có phân trang, lọc theo type, keyword, owner).
 * Quản lý các post (reply) trong thread.
+
+'''
 
 === ThreadResponse Data Type
 
@@ -43,6 +46,8 @@ Dùng cho các API trả về thông tin post trong thread.
 | `created`      | datetime | Thời điểm tạo
 | `updated`      | datetime | Thời điểm cập nhật gần nhất
 |===
+
+'''
 
 === Get Thread List
 
@@ -121,6 +126,8 @@ _401 Unauthorized_
 }
 ----
 
+'''
+
 === Get Thread Detail
 
 ==== GET /forum/thread/{threadId}
@@ -165,29 +172,25 @@ _404 Not Found_
 }
 ----
 
-_401 Unauthorized_
+_403 FORBIDDEN_
 
 [source,json]
 ----
 {
   "timestamp": "2025-02-10T12:40:00",
-  "status": 401,
+  "status": 403,
   "message": "Access denied",
   "details": null
 }
 ----
+
+'''
 
 === Create Thread
 
 ==== POST /forum/thread
 
 Tạo mới một thread.
-
-*Quyền gợi ý*:
-
-* `STUDENT`: tạo được `DISCUSSION` và `QUESTION`.
-* `TEACHER` / `ADMIN`: có thể tạo cả `ANNOUNCEMENT`.
-* `isPinned`: chỉ cho `ADMIN` (hoặc `TEACHER`) set.
 
 *Request*
 
@@ -262,17 +265,19 @@ _400 Bad Request_
 }
 ----
 
-_401 Unauthorized_
+_403 FORBIDDEN_
 
 [source,json]
 ----
 {
   "timestamp": "2025-02-10T12:30:00",
-  "status": 401,
+  "status": 403,
   "message": "Access denied",
   "details": null
 }
 ----
+
+'''
 
 === Update Thread
 
@@ -344,17 +349,19 @@ _400 Bad Request_
 }
 ----
 
-_401 Unauthorized_
+_403 FORBIDDEN_
 
 [source,json]
 ----
 {
   "timestamp": "2025-02-11T09:00:00",
-  "status": 401,
+  "status": 403,
   "message": "Access denied",
   "details": null
 }
 ----
+
+'''
 
 === Delete Thread
 
@@ -393,17 +400,19 @@ _404 Not Found_
 }
 ----
 
-_401 Unauthorized_
+_403 FORBIDDEN_
 
 [source,json]
 ----
 {
   "timestamp": "2025-02-11T10:00:00",
-  "status": 401,
+  "status": 403,
   "message": "Access denied",
   "details": null
 }
 ----
+
+'''
 
 === Get Posts of Thread
 
@@ -464,6 +473,8 @@ _404 Not Found_
   "details": null
 }
 ----
+
+'''
 
 === Create Post in Thread
 
@@ -559,6 +570,8 @@ _401 Unauthorized_
 }
 ----
 
+'''
+
 === Update Post
 
 ==== PATCH /forum/post/{postId}
@@ -601,17 +614,19 @@ _200 OK_
 }
 ----
 
-_401 Unauthorized_
+_403 FORBIDDEN_
 
 [source,json]
 ----
 {
   "timestamp": "2025-02-11T09:10:00",
-  "status": 401,
+  "status": 403,
   "message": "Access denied",
   "details": null
 }
 ----
+
+'''
 
 === Delete Post
 
@@ -637,13 +652,13 @@ _200 OK_
 }
 ----
 
-_401 Unauthorized_
+_403 FORBIDDEN_
 
 [source,json]
 ----
 {
   "timestamp": "2025-02-11T10:00:00",
-  "status": 401,
+  "status": 403,
   "message": "Access denied",
   "details": null
 }
