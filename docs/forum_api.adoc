@@ -1,0 +1,560 @@
+== Forum API
+
+=== Introduction
+
+Module `Forum` chịu trách nhiệm:
+
+* Tạo thread thảo luận / đặt câu hỏi / thông báo
+* Trả về danh sách thread (có phân trang, lọc theo type, keyword, owner)
+* Quản lý các post (reply) trong thread
+
+Enum liên quan:
+
+* `thread_type`: `DISCUSSION`, `QUESTION`, `ANNOUNCEMENT`
+
+=== ThreadResponse Data Type
+
+Dùng cho các API trả về thông tin thread.
+
+[cols="2,2,6",options="header"]
+|===
+| Trường         | Kiểu     | Ghi chú
+
+| `id`           | number   | ID thread
+| `title`        | string   | Tiêu đề (<= 55 ký tự)
+| `content`      | string   | Nội dung chính của thread
+| `type`         | enum     | `DISCUSSION`, `QUESTION`, `ANNOUNCEMENT`
+| `isPinned`     | boolean  | Có đang được ghim hay không
+| `isActive`     | boolean  | `true` nếu còn hiệu lực
+| `ownerId`      | number   | ID người tạo thread
+| `created`      | datetime | Thời điểm tạo
+| `updated`      | datetime | Thời điểm cập nhật gần nhất
+|===
+
+=== PostResponse Data Type
+
+Dùng cho các API trả về thông tin post trong thread.
+
+[cols="2,2,6",options="header"]
+|===
+| Trường         | Kiểu     | Ghi chú
+
+| `id`           | number   | ID post
+| `threadId`     | number   | ID thread chứa post này
+| `ownerId`      | number   | ID người viết post
+| `content`      | string   | Nội dung reply
+| `isActive`     | boolean  | `true` nếu còn hiệu lực
+| `created`      | datetime | Thời điểm tạo
+| `updated`      | datetime | Thời điểm cập nhật gần nhất
+|===
+
+=== Get Thread List
+
+==== GET /forum/thread
+
+Lấy danh sách thread, có phân trang và filter cơ bản.
+
+*Request*
+
+_Method_
+
+[source]
+----
+GET /api/forum/thread
+----
+
+_Query params_
+
+[cols="2,2,3,5",options="header"]
+|===
+| Tham số   | Kiểu   | Bắt buộc | Ghi chú
+
+| `page`    | number | no       | Mặc định = 0
+| `size`    | number | no       | Mặc định = 20
+| `type`    | enum   | no       | Filter theo `DISCUSSION` / `QUESTION` / `ANNOUNCEMENT`
+| `keyword` | string | no       | Tìm trong `title` và `content`
+| `ownerId` | number | no       | Filter theo người tạo thread
+| `pinned`  | bool   | no       | Nếu `true` chỉ lấy thread đang ghim
+|===
+
+_Ví dụ_
+
+[source]
+----
+GET /api/forum/thread?page=0&size=10
+GET /api/forum/thread?type=QUESTION&keyword=limit&page=0&size=5
+GET /api/forum/thread?ownerId=42&page=0&size=20
+----
+
+*Response*
+
+_200 OK_
+
+[source,json]
+----
+{
+  "content": [
+    {
+      "id": 1,
+      "title": "Thảo luận bài tập giới hạn",
+      "content": "Mọi người cho mình hỏi về bài tập giới hạn này...",
+      "type": "QUESTION",
+      "isPinned": false,
+      "isActive": true,
+      "ownerId": 42,
+      "created": "2025-02-10T12:30:00",
+      "updated": "2025-02-10T12:30:00"
+    }
+  ],
+  "page": 0,
+  "size": 10,
+  "totalElements": 1,
+  "totalPages": 1
+}
+----
+
+401 Unauthorized
+
+[source,json]
+----
+{
+  "message": "Not authenticated"
+}
+----
+
+=== Get Thread Detail
+
+==== GET /forum/thread/{threadId}
+
+Lấy chi tiết 1 thread.
+
+*Request*
+
+[source]
+----
+GET /api/forum/thread/1
+----
+
+*Response*
+
+_200 OK_
+
+[source,json]
+----
+{
+  "id": 1,
+  "title": "Thảo luận bài tập giới hạn",
+  "content": "Mọi người cho mình hỏi về bài tập giới hạn này...",
+  "type": "QUESTION",
+  "isPinned": false,
+  "isActive": true,
+  "ownerId": 42,
+  "created": "2025-02-10T12:30:00",
+  "updated": "2025-02-10T12:30:00"
+}
+----
+
+_404 Not Found_
+
+[source,json]
+----
+{
+  "message": "Thread not found"
+}
+----
+
+401 Unauthorized
+
+[source,json]
+----
+{
+  "message": "Access denied"
+}
+----
+
+=== Create Thread
+
+==== POST /forum/thread
+
+Tạo mới một thread.
+
+*Quyền gợi ý*:
+
+* `STUDENT`: tạo được `DISCUSSION` và `QUESTION`
+* `TEACHER` / `ADMIN`: có thể tạo cả `ANNOUNCEMENT`
+* `isPinned` chỉ cho `ADMIN` (hoặc `TEACHER`) set
+
+*Request*
+
+_Method_
+
+[source]
+----
+POST /api/forum/thread
+----
+
+_Headers_
+
+[source]
+----
+Content-Type: application/json
+Cookie: JSESSIONID=abc123xyz;
+----
+
+_Body_
+
+[source,json]
+----
+{
+  "title": "Thảo luận bài tập giới hạn",
+  "content": "Mọi người cho mình hỏi về bài tập sau...",
+  "type": "QUESTION"
+}
+----
+
+_Data Constraints_
+
+[cols="2,2,3,5",options="header"]
+|===
+| Trường   | Kiểu           | Bắt buộc | Ghi chú
+
+| `title`  | string (1..55) | yes      | Tiêu đề thread
+| `content`| string         | yes      | Nội dung thread
+| `type`   | enum           | no       | `DISCUSSION` / `QUESTION` / `ANNOUNCEMENT`, mặc định `DISCUSSION`
+|===
+
+*Response*
+
+_201 Created_
+
+[source,json]
+----
+{
+  "id": 1,
+  "title": "Thảo luận bài tập giới hạn",
+  "content": "Mọi người cho mình hỏi về bài tập sau...",
+  "type": "QUESTION",
+  "isPinned": false,
+  "isActive": true,
+  "ownerId": 42,
+  "created": "2025-02-10T12:30:00",
+  "updated": "2025-02-10T12:30:00"
+}
+----
+
+_400 Bad Request_
+
+[source,json]
+----
+{
+  "message": "Invalid input",
+  "error": [
+    "title must not be blank"
+  ]
+}
+----
+
+401 Unauthorized
+
+[source,json]
+----
+{
+  "message": "Access denied"
+}
+----
+
+=== Update Thread
+
+==== PATCH /forum/thread/{threadId}
+
+Cho phép sửa metadata của thread.
+Chỉ `owner` hoặc `ADMIN` được sửa.
+
+*Request*
+
+[source]
+----
+PATCH /api/forum/thread/1
+----
+
+_Headers_
+
+[source]
+----
+Content-Type: application/json
+Cookie: JSESSIONID=abc123xyz;
+----
+
+_Body_
+
+[source,json]
+----
+{
+  "title": "Thảo luận bài tập giới hạn (đã cập nhật)",
+  "content": "Cập nhật thêm đề bài đầy đủ...",
+  "type": "QUESTION",
+  "isPinned": true
+}
+----
+
+*Response*
+
+_200 OK_
+
+[source,json]
+----
+{
+  "message": "Update success",
+  "thread": {
+    "id": 1,
+    "title": "Thảo luận bài tập giới hạn (đã cập nhật)",
+    "content": "Cập nhật thêm đề bài đầy đủ...",
+    "type": "QUESTION",
+    "isPinned": true,
+    "isActive": true,
+    "ownerId": 42,
+    "created": "2025-02-10T12:30:00",
+    "updated": "2025-02-11T09:00:00"
+  }
+}
+----
+
+401 Unauthorized
+
+[source,json]
+----
+{
+  "message": "Access denied"
+}
+----
+
+=== Delete Thread
+
+==== DELETE /forum/thread/{threadId}
+
+Soft delete thread: đánh dấu `is_active = false`.
+Các `forum_post` có thể vẫn giữ, hoặc logic ẩn theo backend.
+
+*Request*
+
+[source]
+----
+DELETE /api/forum/thread/1
+----
+
+*Response*
+
+_200 OK_
+
+[source,json]
+----
+{
+  "message": "Delete success"
+}
+----
+
+_404 Not Found_
+
+[source,json]
+----
+{
+  "message": "Thread not found"
+}
+----
+
+401 Unauthorized
+
+[source,json]
+----
+{
+  "message": "Access denied"
+}
+----
+
+=== Get Posts of Thread
+
+==== GET /forum/thread/{threadId}/post
+
+Lấy danh sách post thuộc một thread, có phân trang.
+
+*Request*
+
+[source]
+----
+GET /api/forum/thread/1/post?page=0&size=20
+----
+
+_Query params_
+
+[cols="2,2,3,5",options="header"]
+|===
+| Tham số | Kiểu   | Bắt buộc | Ghi chú
+
+| `page`  | number | no       | Mặc định = 0
+| `size`  | number | no       | Mặc định = 20
+|===
+
+*Response*
+
+_200 OK_
+
+[source,json]
+----
+{
+  "content": [
+    {
+      "id": 100,
+      "threadId": 1,
+      "ownerId": 42,
+      "content": "Theo mình thì bài này làm như sau...",
+      "isActive": true,
+      "created": "2025-02-10T13:00:00",
+      "updated": "2025-02-10T13:00:00"
+    }
+  ],
+  "page": 0,
+  "size": 20,
+  "totalElements": 1,
+  "totalPages": 1
+}
+----
+
+=== Create Post in Thread
+
+==== POST /forum/thread/{threadId}/post
+
+Tạo một post (reply) mới trong thread.
+
+*Request*
+
+[source]
+----
+POST /api/forum/thread/1/post
+----
+
+_Headers_
+
+[source]
+----
+Content-Type: application/json
+Cookie: JSESSIONID=abc123xyz;
+----
+
+_Body_
+
+[source,json]
+----
+{
+  "content": "Theo mình thì bài này làm như sau..."
+}
+----
+
+_Data Constraints_
+
+[cols="2,2,3,5",options="header"]
+|===
+| Trường   | Kiểu   | Bắt buộc | Ghi chú
+
+| `content`| string | yes      | Nội dung post
+|===
+
+*Response*
+
+_201 Created_
+
+[source,json]
+----
+{
+  "id": 100,
+  "threadId": 1,
+  "ownerId": 42,
+  "content": "Theo mình thì bài này làm như sau...",
+  "isActive": true,
+  "created": "2025-02-10T13:00:00",
+  "updated": "2025-02-10T13:00:00"
+}
+----
+
+_404 Not Found_
+
+[source,json]
+----
+{
+  "message": "Thread not found"
+}
+----
+
+_401 Unauthorized_
+
+[source,json]
+----
+{
+  "message": "Not authenticated"
+}
+----
+
+=== Update Post
+
+==== PATCH /forum/post/{postId}
+
+Chỉ `owner` hoặc `ADMIN` được sửa post.
+
+*Request*
+
+[source]
+----
+PATCH /api/forum/post/100
+----
+
+_Body_
+
+[source,json]
+----
+{
+  "content": "Mình chỉnh lại lời giải cho rõ hơn..."
+}
+----
+
+*Response*
+
+_200 OK_
+
+[source,json]
+----
+{
+  "message": "Update success",
+  "post": {
+    "id": 100,
+    "threadId": 1,
+    "ownerId": 42,
+    "content": "Mình chỉnh lại lời giải cho rõ hơn...",
+    "isActive": true,
+    "created": "2025-02-10T13:00:00",
+    "updated": "2025-02-11T09:10:00"
+  }
+}
+----
+
+=== Delete Post
+
+==== DELETE /forum/post/{postId}
+
+Soft delete: set `is_active = false`.
+
+*Request*
+
+[source]
+----
+DELETE /api/forum/post/100
+----
+
+*Response*
+
+_200 OK_
+
+[source,json]
+----
+{
+  "message": "Delete success"
+}
+----

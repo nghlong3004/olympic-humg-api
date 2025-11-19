@@ -1,0 +1,432 @@
+== Question API
+
+=== Introduction
+
+Module `Question` chịu trách nhiệm:
+
+* Quản lý câu hỏi thuộc một `assignment`
+* Hỗ trợ 2 loại câu hỏi:
+** `MULTIPLE_CHOICE` – trắc nghiệm nhiều lựa chọn
+** `SHORT_ANSWER` – trả lời ngắn
+* Quản lý các option của câu hỏi trắc nghiệm (bảng `question_option`)
+
+Quy ước quyền gợi ý:
+
+* `TEACHER` / `ADMIN`: tạo, sửa, xoá câu hỏi
+* `STUDENT`: chỉ xem câu hỏi khi làm bài/ôn tập (tùy business logic)
+
+=== QuestionOptionResponse Data Type
+
+Đại diện một lựa chọn (option) của câu hỏi trắc nghiệm.
+
+[cols="2,2,6",options="header"]
+|===
+| Trường      | Kiểu   | Ghi chú
+
+| `id`        | number | ID option
+| `optionKey` | string | Key của option, ví dụ: `"A"`, `"B"`, `"C"`...
+| `content`   | string | Nội dung lựa chọn
+|===
+
+=== QuestionResponse Data Type
+
+Dùng cho các API trả về thông tin câu hỏi.
+
+[cols="2,2,6",options="header"]
+|===
+| Trường          | Kiểu             | Ghi chú
+
+| `id`            | number           | ID câu hỏi
+| `assignmentId`  | number           | ID assignment chứa câu hỏi này
+| `type`          | enum             | `MULTIPLE_CHOICE` hoặc `SHORT_ANSWER`
+| `content`       | string           | Nội dung câu hỏi
+| `correctAnswer` | string           | Đáp án đúng (text). Với `MULTIPLE_CHOICE` thường là `"A"`, `"B"`,... hoặc `"A;C"`.
+| `score`         | number           | Số điểm cho câu hỏi, mặc định = 1
+| `options`       | array<QuestionOptionResponse> | Danh sách lựa chọn (chỉ cho `MULTIPLE_CHOICE`)
+| `isActive`      | boolean          | `true` nếu câu hỏi còn hiệu lực
+| `created`       | datetime         | Thời điểm tạo
+| `updated`       | datetime         | Thời điểm cập nhật gần nhất
+|===
+
+=== Get Questions of Assignment
+
+==== GET /assignment/{assignmentId}/question
+
+Lấy danh sách câu hỏi thuộc một assignment.
+
+*Request*
+
+_Method_
+
+[source]
+----
+GET /api/assignment/5/question
+----
+
+_Query params_
+
+[cols="2,2,3,5",options="header"]
+|===
+| Tham số | Kiểu   | Bắt buộc | Ghi chú
+
+| `active`| bool   | no       | Nếu `true` chỉ lấy câu hỏi `isActive = true`
+|===
+
+*Response*
+
+_200 OK_
+
+[source,json]
+----
+[
+  {
+    "id": 101,
+    "assignmentId": 5,
+    "type": "MULTIPLE_CHOICE",
+    "content": "Giới hạn của dãy số (u_n) là gì?",
+    "correctAnswer": "B",
+    "score": 1,
+    "options": [
+      { "id": 1001, "optionKey": "A", "content": "1" },
+      { "id": 1002, "optionKey": "B", "content": "0" },
+      { "id": 1003, "optionKey": "C", "content": "+∞" },
+      { "id": 1004, "optionKey": "D", "content": "-∞" }
+    ],
+    "isActive": true,
+    "created": "2025-02-10T12:30:00",
+    "updated": "2025-02-10T12:30:00"
+  }
+]
+----
+
+_404 Not Found_
+
+[source,json]
+----
+{
+  "message": "Assignment not found"
+}
+----
+
+401 Unauthorized
+
+[source,json]
+----
+{
+  "message": "Access denied"
+}
+----
+
+=== Get Question Detail
+
+==== GET /assignment/{assignmentId}/question/{questionId}
+
+Lấy chi tiết một câu hỏi.
+
+*Request*
+
+[source]
+----
+GET /api/assignment/5/question/101
+----
+
+*Response*
+
+_200 OK_
+
+[source,json]
+----
+{
+  "id": 101,
+  "assignmentId": 5,
+  "type": "MULTIPLE_CHOICE",
+  "content": "Giới hạn của dãy số (u_n) là gì?",
+  "correctAnswer": "B",
+  "score": 1,
+  "options": [
+    { "id": 1001, "optionKey": "A", "content": "1" },
+    { "id": 1002, "optionKey": "B", "content": "0" },
+    { "id": 1003, "optionKey": "C", "content": "+∞" },
+    { "id": 1004, "optionKey": "D", "content": "-∞" }
+  ],
+  "isActive": true,
+  "created": "2025-02-10T12:30:00",
+  "updated": "2025-02-10T12:30:00"
+}
+----
+
+_404 Not Found_
+
+[source,json]
+----
+{
+  "message": "Question not found"
+}
+----
+
+401 Unauthorized
+
+[source,json]
+----
+{
+  "message": "Access denied"
+}
+----
+
+=== Create Question
+
+==== POST /assignment/{assignmentId}/question
+
+Tạo mới câu hỏi cho một assignment.
+
+*Request*
+
+_Method_
+
+[source]
+----
+POST /api/assignment/5/question
+----
+
+_Headers_
+
+[source]
+----
+Content-Type: application/json
+Cookie: JSESSIONID=abc123xyz;
+----
+
+_Body (MULTIPLE_CHOICE)_
+
+[source,json]
+----
+{
+  "type": "MULTIPLE_CHOICE",
+  "content": "Giới hạn của dãy số (u_n) là gì?",
+  "correctAnswer": "B",
+  "score": 1,
+  "options": [
+    { "optionKey": "A", "content": "1" },
+    { "optionKey": "B", "content": "0" },
+    { "optionKey": "C", "content": "+∞" },
+    { "optionKey": "D", "content": "-∞" }
+  ]
+}
+----
+
+_Body (SHORT_ANSWER)_
+
+[source,json]
+----
+{
+  "type": "SHORT_ANSWER",
+  "content": "Tính giới hạn lim (x→0) sin x / x.",
+  "correctAnswer": "1",
+  "score": 2
+}
+----
+
+_Data Constraints_
+
+[cols="2,2,3,5",options="header"]
+|===
+| Trường          | Kiểu            | Bắt buộc | Ghi chú
+
+| `type`          | enum            | yes      | `MULTIPLE_CHOICE` / `SHORT_ANSWER`
+| `content`       | string          | yes      | Nội dung câu hỏi
+| `correctAnswer` | string          | no       | Có thể `null` nếu chấm tay, nhưng khuyến khích có để chấm tự động
+| `score`         | number          | no       | Mặc định = 1
+| `options`       | array<object>   | no       | Bắt buộc nếu `type = MULTIPLE_CHOICE`
+| `options[].optionKey` | string    | yes*     | Bắt buộc với `MULTIPLE_CHOICE`, ví dụ `"A"`, `"B"`
+| `options[].content`   | string    | yes*     | Nội dung lựa chọn
+|===
+
+*Response*
+
+_201 Created_
+
+[source,json]
+----
+{
+  "id": 101,
+  "assignmentId": 5,
+  "type": "MULTIPLE_CHOICE",
+  "content": "Giới hạn của dãy số (u_n) là gì?",
+  "correctAnswer": "B",
+  "score": 1,
+  "options": [
+    { "id": 1001, "optionKey": "A", "content": "1" },
+    { "id": 1002, "optionKey": "B", "content": "0" },
+    { "id": 1003, "optionKey": "C", "content": "+∞" },
+    { "id": 1004, "optionKey": "D", "content": "-∞" }
+  ],
+  "isActive": true,
+  "created": "2025-02-10T12:30:00",
+  "updated": "2025-02-10T12:30:00"
+}
+----
+
+_400 Bad Request_
+
+[source,json]
+----
+{
+  "message": "Invalid input",
+  "error": [
+    "content must not be blank",
+    "options must not be empty for MULTIPLE_CHOICE"
+  ]
+}
+----
+
+_404 Not Found_
+
+[source,json]
+----
+{
+  "message": "Assignment not found"
+}
+----
+
+401 Unauthorized
+
+[source,json]
+----
+{
+  "message": "Access denied"
+}
+----
+
+=== Update Question
+
+==== PATCH /assignment/{assignmentId}/question/{questionId}
+
+*Request*
+
+[source]
+----
+PATCH /api/assignment/5/question/101
+----
+
+_Headers_
+
+[source]
+----
+Content-Type: application/json
+Cookie: JSESSIONID=abc123xyz;
+----
+
+_Body_ (tất cả field optional – tuỳ implement có thể replace toàn bộ options)
+
+[source,json]
+----
+{
+  "content": "Giới hạn của dãy số (u_n) là gì? (phiên bản cập nhật)",
+  "correctAnswer": "C",
+  "score": 2,
+  "options": [
+    { "optionKey": "A", "content": "0" },
+    { "optionKey": "B", "content": "1" },
+    { "optionKey": "C", "content": "Không tồn tại" },
+    { "optionKey": "D", "content": "+∞" }
+  ],
+  "isActive": true
+}
+----
+
+*Response*
+
+_200 OK_
+
+[source,json]
+----
+{
+  "message": "Update success",
+  "question": {
+    "id": 101,
+    "assignmentId": 5,
+    "type": "MULTIPLE_CHOICE",
+    "content": "Giới hạn của dãy số (u_n) là gì? (phiên bản cập nhật)",
+    "correctAnswer": "C",
+    "score": 2,
+    "options": [
+      { "id": 1001, "optionKey": "A", "content": "0" },
+      { "id": 1002, "optionKey": "B", "content": "1" },
+      { "id": 1003, "optionKey": "C", "content": "Không tồn tại" },
+      { "id": 1004, "optionKey": "D", "content": "+∞" }
+    ],
+    "isActive": true,
+    "created": "2025-02-10T12:30:00",
+    "updated": "2025-02-11T09:00:00"
+  }
+}
+----
+
+_400 Bad Request_
+
+[source,json]
+----
+{
+  "message": "Invalid input"
+}
+----
+
+_404 Not Found_
+
+[source,json]
+----
+{
+  "message": "Question not found"
+}
+----
+
+401 Unauthorized
+
+[source,json]
+----
+{
+  "message": "Access denied"
+}
+----
+
+=== Delete Question
+
+==== DELETE /assignment/{assignmentId}/question/{questionId}
+
+Soft delete câu hỏi: set `is_active = false`.
+
+*Request*
+
+[source]
+----
+DELETE /api/assignment/5/question/101
+----
+
+*Response*
+
+_200 OK_
+
+[source,json]
+----
+{
+  "message": "Delete success"
+}
+----
+
+_404 Not Found_
+
+[source,json]
+----
+{
+  "message": "Question not found"
+}
+----
+
+401 Unauthorized
+
+[source,json]
+----
+{
+  "message": "Access denied"
+}
+----

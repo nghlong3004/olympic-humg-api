@@ -1,0 +1,301 @@
+== Assignment Submission API
+
+=== Introduction
+
+Module `Assignment Submission` chịu trách nhiệm:
+
+* Ghi nhận việc sinh viên nộp bài cho một `assignment`
+* Quản lý trạng thái chấm điểm của bài nộp
+* Cho phép giảng viên xem danh sách bài nộp, cập nhật điểm
+
+* `PENDING` – đã tạo submission, đang chờ sinh viên nộp / chờ chấm
+* `SUBMITTED` – sinh viên đã nộp, đang chờ chấm
+* `GRADED` – đã chấm điểm
+
+=== AssignmentSubmissionResponse Data Type
+
+[cols="2,2,6",options="header"]
+|===
+| Trường        | Kiểu     | Ghi chú
+
+| `id`          | number   | ID submission
+| `assignmentId`| number   | ID assignment
+| `studentId`   | number   | ID sinh viên
+| `status`      | enum     | `PENDING`, `SUBMITTED`, `GRADED`
+| `scoreTotal`  | number   | Tổng điểm, có thể null nếu chưa chấm
+| `submitted`   | datetime | Thời điểm nộp bài
+| `graded`      | datetime | Thời điểm chấm xong, có thể null
+|===
+
+=== Create or Submit Assignment
+
+==== POST /assignment/{assignmentId}/submission
+
+Sinh viên nộp bài cho một assignment.
+Tuỳ business bạn có thể:
+
+* Tạo mới submission nếu chưa tồn tại
+* Hoặc cập nhật submission hiện tại và chuyển trạng thái sang `SUBMITTED`
+
+*Request*
+
+_Method_
+
+[source]
+----
+POST /api/assignment/5/submission
+----
+
+_Headers_
+
+[source]
+----
+Content-Type: application/json
+Cookie: JSESSIONID=abc123xyz;
+----
+
+_Body_ (gợi ý – nếu sau này thêm payload đáp án chi tiết, có thể mở rộng)
+
+[source,json]
+----
+{
+  "status": "SUBMITTED"
+}
+----
+
+*Response*
+
+_201 Created_ hoặc _200 OK_ (tùy implement)
+
+[source,json]
+----
+{
+  "id": 1000,
+  "assignmentId": 5,
+  "studentId": 99,
+  "status": "SUBMITTED",
+  "scoreTotal": null,
+  "submitted": "2025-03-02T20:15:00",
+  "graded": null
+}
+----
+
+_400 Bad Request_
+
+[source,json]
+----
+{
+  "message": "Invalid input"
+}
+----
+
+_404 Not Found_
+
+[source,json]
+----
+{
+  "message": "Assignment not found"
+}
+----
+
+401 Unauthorized
+
+[source,json]
+----
+{
+  "message": "Access denied"
+}
+----
+
+=== Get My Submission for Assignment
+
+==== GET /assignment/{assignmentId}/submission/me
+
+Sinh viên xem thông tin bài nộp của chính mình cho assignment đó.
+
+*Request*
+
+[source]
+----
+GET /api/assignment/5/submission/me
+----
+
+*Response*
+
+_200 OK_
+
+[source,json]
+----
+{
+  "id": 1000,
+  "assignmentId": 5,
+  "studentId": 99,
+  "status": "GRADED",
+  "scoreTotal": 8,
+  "submitted": "2025-03-02T20:15:00",
+  "graded": "2025-03-03T10:00:00"
+}
+----
+
+_404 Not Found_
+
+[source,json]
+----
+{
+  "message": "Submission not found"
+}
+----
+
+401 Unauthorized
+
+[source,json]
+----
+{
+  "message": "Not authenticated"
+}
+----
+
+=== Get Submissions of Assignment (Teacher/Admin)
+
+==== GET /assignment/{assignmentId}/submission
+
+Giảng viên hoặc admin xem danh sách bài nộp cho một assignment.
+
+*Request*
+
+[source]
+----
+GET /api/assignment/5/submission?page=0&size=20&status=SUBMITTED
+----
+
+_Query params_
+
+[cols="2,2,3,5",options="header"]
+|===
+| Tham số  | Kiểu   | Bắt buộc | Ghi chú
+
+| `page`   | number | no       | Mặc định = 0
+| `size`   | number | no       | Mặc định = 20
+| `status` | enum   | no       | Filter theo `PENDING` / `SUBMITTED` / `GRADED`
+|===
+
+*Response*
+
+_200 OK_
+
+[source,json]
+----
+{
+  "content": [
+    {
+      "id": 1000,
+      "assignmentId": 5,
+      "studentId": 99,
+      "status": "SUBMITTED",
+      "scoreTotal": null,
+      "submitted": "2025-03-02T20:15:00",
+      "graded": null
+    }
+  ],
+  "page": 0,
+  "size": 20,
+  "totalElements": 1,
+  "totalPages": 1
+}
+----
+
+_404 Not Found_
+
+[source,json]
+----
+{
+  "message": "Assignment not found"
+}
+----
+
+401 Unauthorized
+
+[source,json]
+----
+{
+  "message": "Access denied"
+}
+----
+
+=== Grade Submission (Update Score & Status)
+
+==== PATCH /assignment/submission/{submissionId}
+
+Giảng viên/ADMIN chấm bài: cập nhật `scoreTotal` và trạng thái `status = GRADED`.
+
+*Request*
+
+[source]
+----
+PATCH /api/assignment/submission/1000
+----
+
+_Headers_
+
+[source]
+----
+Content-Type: application/json
+Cookie: JSESSIONID=abc123xyz;
+----
+
+_Body_
+
+[source,json]
+----
+{
+  "scoreTotal": 8,
+  "status": "GRADED"
+}
+----
+
+*Response*
+
+_200 OK_
+
+[source,json]
+----
+{
+  "message": "Update success",
+  "submission": {
+    "id": 1000,
+    "assignmentId": 5,
+    "studentId": 99,
+    "status": "GRADED",
+    "scoreTotal": 8,
+    "submitted": "2025-03-02T20:15:00",
+    "graded": "2025-03-03T10:00:00"
+  }
+}
+----
+
+_400 Bad Request_
+
+[source,json]
+----
+{
+  "message": "Invalid input"
+}
+----
+
+_404 Not Found_
+
+[source,json]
+----
+{
+  "message": "Submission not found"
+}
+----
+
+401 Unauthorized
+
+[source,json]
+----
+{
+  "message": "Access denied"
+}
+----

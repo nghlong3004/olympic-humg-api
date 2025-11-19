@@ -1,0 +1,244 @@
+== Auth API
+
+=== Introduction
+
+Module `Auth` chịu trách nhiệm:
+
+* Đăng ký tài khoản (mặc định role = `STUDENT`)
+* Đăng nhập (sử dụng session-cookie)
+* Đăng xuất (huỷ session hiện tại)
+
+=== Register
+
+==== POST /auth/register
+
+Tạo tài khoản mới trong hệ thống.
+Tài khoản mới luôn có `role = STUDENT` (client không được phép truyền role lên).
+
+*Request*
+
+_Method_
+
+[source]
+----
+POST /api/auth/register
+----
+
+_Headers_
+
+[source]
+----
+Content-Type: application/json
+----
+
+_Body_
+
+[source,json]
+----
+{
+  "firstName": "Long",
+  "lastName": "Nguyen",
+  "email": "long@example.com",
+  "password": "123456",
+  "gender": "MALE",
+  "birthday": "2004-03-30",
+  "phone": "0987123456",
+  "universityName": "HUMG",
+  "facultyName": "Control Engineering"
+}
+----
+
+_Data Constraints_
+
+[cols="2,2,3,5",options="header"]
+|===
+| Trường
+| Kiểu
+| Bắt buộc
+| Ghi chú
+
+| `firstName`
+| string (1..25)
+| yes
+| Tên, không rỗng
+
+| `lastName`
+| string (1..25)
+| yes
+| Họ, không rỗng
+
+| `email`
+| email
+| yes
+| Duy nhất trong hệ thống
+
+| `password`
+| string (>= 6)
+| yes
+| Mật khẩu, sẽ được hash trước khi lưu
+
+| `gender`
+| enum
+| yes
+| Một trong: `MALE`, `FEMALE`, `OTHER`
+
+| `birthday`
+| date
+| yes
+| Ngày sinh (YYYY-MM-DD)
+
+| `phone`
+| string
+| no
+| Số điện thoại, có thể để trống
+
+| `universityName`
+| string (<= 50)
+| no
+| Tên trường, có thể để trống
+
+| `facultyName`
+| string (<= 50)
+| no
+| Tên khoa, có thể để trống
+|===
+
+*Response*
+
+201 Created
+
+400 Bad Request
+
+[source,json]
+----
+{
+  "message": "Invalid input",
+  "error": [
+    "email must be a valid email address",
+    "password must be at least 6 characters"
+  ]
+}
+----
+
+409 Conflict
+
+[source,json]
+----
+{
+  "message": "Email already exists"
+}
+----
+
+=== Login
+
+==== POST /auth/login
+
+Đăng nhập vào hệ thống bằng email + password.
+Nếu thành công, server tạo session và gửi cookie `JSESSIONID` về cho client.
+
+*Request*
+
+_Method_
+
+[source]
+----
+POST /api/auth/login
+----
+
+_Headers_
+
+[source]
+----
+Content-Type: application/json
+----
+
+_Body_
+
+[source,json]
+----
+{
+  "email": "long@example.com",
+  "password": "123456"
+}
+----
+
+*Response*
+
+200 OK
+
+[source,json]
+----
+{
+  "message": "Login success",
+  "user": {
+    "id": 42,
+    "firstName": "Long",
+    "lastName": "Nguyen",
+    "email": "long@example.com",
+    "gender": "MALE",
+    "birthday": "2004-03-30",
+    "role": "STUDENT",
+    "universityName": "HUMG",
+    "facultyName": "Control Engineering",
+    "phone": "0987123456",
+    "avatarUrl": "https://cdn.example.com/avatar/default.png"
+  }
+}
+----
+
+_Cookie (Set-Cookie)_
+
+[source]
+----
+Set-Cookie: JSESSIONID=abc123xyz; HttpOnly; Secure; Path=/;
+----
+
+401 Unauthorized
+
+[source,json]
+----
+{
+  "message": "Invalid email or password"
+}
+----
+
+=== Logout
+
+==== POST /auth/logout
+
+Huỷ session hiện tại, xoá cookie `JSESSIONID`.
+Yêu cầu user đã đăng nhập.
+
+*Request*
+
+_Method_
+
+[source]
+----
+POST /api/auth/logout
+----
+
+_Headers_
+
+[source]
+----
+Cookie: JSESSIONID=abc123xyz;
+----
+
+*Response*
+
+200 OK
+
+[source]
+----
+Set-Cookie: JSESSIONID=; Max-Age=0; HttpOnly; Secure; Path=/;
+----
+
+401 Unauthorized
+
+[source,json]
+----
+{
+  "message": "Not authenticated"
+}
+----
