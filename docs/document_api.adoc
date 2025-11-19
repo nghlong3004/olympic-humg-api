@@ -1,0 +1,421 @@
+== Document API
+
+=== Introduction
+
+Module `Document` chịu trách nhiệm:
+
+* Giảng viên/Admin upload tài liệu.
+* Sinh viên xem danh sách tài liệu, xem chi tiết.
+
+=== DocumentResponse Data Type
+
+Dùng chung cho các API trả về thông tin tài liệu.
+
+[cols="2,2,6",options="header"]
+|===
+| Trường
+| Kiểu
+| Ghi chú
+
+| `id`           | number   | ID tài liệu
+| `title`        | string   | Tiêu đề tài liệu (<= 55 ký tự)
+| `description`  | string   | Mô tả ngắn (<= 155 ký tự), có thể null
+| `fileUrl`      | string   | URL truy cập file
+| `fileType`     | string   | Loại file, ví dụ: `pdf`, `pptx`, `docx`, `jpg`...
+| `fileSize`     | number   | Kích thước file (bytes)
+| `subjectName`  | string   | Tên môn/chủ đề (<= 30 ký tự), có thể null
+| `accessType`   | enum     | `PUBLIC` hoặc `PRIVATE`
+| `ownerId`      | number   | ID người sở hữu (giảng viên/admin upload)
+| `created`      | datetime | Thời điểm tạo
+| `updated`      | datetime | Thời điểm cập nhật gần nhất
+|===
+
+=== Upload Document
+
+==== POST /document
+
+Giảng viên/Admin upload một tài liệu mới.
+Upload dùng `multipart/form-data`.
+
+*Request*
+
+_Method_
+
+[source]
+----
+POST /api/document
+----
+
+_Headers_
+
+[source]
+----
+Content-Type: multipart/form-data
+Cookie: JSESSIONID=abc123xyz;
+----
+
+_Body_
+
+[cols="2,2,3,5",options="header"]
+|===
+| Trường
+| Kiểu
+| Bắt buộc
+| Ghi chú
+
+| `file`
+| file
+| yes
+| File tài liệu (PDF, PPTX, DOCX, hình ảnh,...)
+
+| `title`
+| string (1..50)
+| yes
+| Tiêu đề tài liệu
+
+| `description`
+| string (<= 155)
+| no
+| Mô tả ngắn cho tài liệu
+
+| `subjectName`
+| string (<= 30)
+| no
+| Tên môn/chủ đề, ví dụ: `"Math"`, `"Physics"`
+
+| `accessType`
+| enum
+| no
+| `PUBLIC` hoặc `PRIVATE`. Mặc định: `PUBLIC`.
+|===
+
+*Response*
+
+_201 Created_
+
+[source,json]
+----
+{
+  "id": 10,
+  "title": "Tài liệu ôn tập Toán 1",
+  "description": "Tổng hợp công thức và bài tập chương 1",
+  "fileUrl": "https://cdn.example.com/documents/10.pdf",
+  "fileType": "pdf",
+  "fileSize": 123456,
+  "subjectName": "Math",
+  "accessType": "PUBLIC",
+  "ownerId": 42,
+  "created": "2025-02-10T12:30:00",
+  "updated": "2025-02-10T12:30:00"
+}
+----
+
+_400 Bad Request_
+
+[source,json]
+----
+{
+  "timestamp": "2025-02-10T12:30:00",
+  "status": 400,
+  "message": "Dữ liệu không hợp lệ",
+  "details": {
+    "title": "must not be blank",
+    "file": "is required"
+  }
+}
+----
+
+_401 Unauthorized_
+
+[source,json]
+----
+{
+  "timestamp": "2025-02-10T12:30:00",
+  "status": 401,
+  "message": "Access denied (Chỉ giảng viên mới được upload)",
+  "details": null
+}
+----
+
+=== Get Document List
+
+==== GET /document
+
+Lấy danh sách tài liệu, hỗ trợ phân trang và filter cơ bản.
+Sinh viên, giảng viên, admin đều có thể gọi, nhưng kết quả có thể được filter theo `accessType` và quyền.
+
+*Request*
+
+_Method_
+
+[source]
+----
+GET /api/document
+----
+
+_Query params_
+
+[cols="2,2,3,5",options="header"]
+|===
+| Tham số     | Kiểu   | Bắt buộc | Ghi chú
+
+| `page`      | number | no       | Số trang, bắt đầu từ 0. Mặc định = 0.
+| `size`      | number | no       | Số phần tử mỗi trang. Mặc định = 20.
+| `subject`   | string | no       | Filter theo `subjectName`.
+| `keyword`   | string | no       | Tìm kiếm trong `title` và `description`.
+| `ownerId`   | number | no       | Filter theo người sở hữu tài liệu (ví dụ: "tài liệu của tôi" đối với giảng viên).
+| `accessType`| enum   | no       | `PUBLIC` hoặc `PRIVATE`. Thường chỉ admin/owner mới thấy PRIVATE.
+|===
+
+_Ví dụ_
+
+[source]
+----
+GET /api/document?page=0&size=10
+GET /api/document?subject=Math&keyword=on%20tap&page=0&size=5
+GET /api/document?ownerId=42&page=0&size=20
+----
+
+*Response*
+
+_200 OK_
+
+[source,json]
+----
+{
+  "content": [
+    {
+      "id": 10,
+      "title": "Tài liệu ôn tập Toán 1",
+      "description": "Tổng hợp công thức và bài tập chương 1",
+      "fileUrl": "https://cdn.example.com/documents/10.pdf",
+      "fileType": "pdf",
+      "fileSize": 123456,
+      "subjectName": "Math",
+      "accessType": "PUBLIC",
+      "ownerId": 42,
+      "created": "2025-02-10T12:30:00",
+      "updated": "2025-02-10T12:30:00"
+    }
+  ],
+  "page": 0,
+  "size": 10,
+  "totalElements": 1,
+  "totalPages": 1
+}
+----
+
+_401 Unauthorized_
+
+[source,json]
+----
+{
+  "timestamp": "2025-02-10T12:35:00",
+  "status": 401,
+  "message": "Not authenticated",
+  "details": null
+}
+----
+
+=== Get Document Detail
+
+==== GET /document/{documentId}
+
+Lấy chi tiết một tài liệu theo `documentId`.
+
+*Request*
+
+[source]
+----
+GET /api/document/10
+----
+
+*Response*
+
+_200 OK_
+
+[source,json]
+----
+{
+  "id": 10,
+  "title": "Tài liệu ôn tập Toán 1",
+  "description": "Tổng hợp công thức và bài tập chương 1",
+  "fileUrl": "https://cdn.example.com/documents/10.pdf",
+  "fileType": "pdf",
+  "fileSize": 123456,
+  "subjectName": "Math",
+  "accessType": "PUBLIC",
+  "ownerId": 42,
+  "created": "2025-02-10T12:30:00",
+  "updated": "2025-02-10T12:30:00"
+}
+----
+
+_404 Not Found_
+
+[source,json]
+----
+{
+  "timestamp": "2025-02-10T12:40:00",
+  "status": 404,
+  "message": "Document not found",
+  "details": null
+}
+----
+
+_401 Unauthorized_
+
+[source,json]
+----
+{
+  "timestamp": "2025-02-10T12:40:00",
+  "status": 401,
+  "message": "Access denied",
+  "details": null
+}
+----
+
+=== Update Document Metadata
+
+==== PATCH /document/{documentId}
+
+Cho phép cập nhật metadata của tài liệu (không upload lại file).
+Chỉ `owner` (giảng viên tạo tài liệu) hoặc `ADMIN` được phép sửa.
+
+*Request*
+
+[source]
+----
+PATCH /api/document/10
+----
+
+_Headers_
+
+[source]
+----
+Content-Type: application/json
+Cookie: JSESSIONID=abc123xyz;
+----
+
+_Body_ (tất cả field đều optional)
+
+[source,json]
+----
+{
+  "title": "Tài liệu ôn tập Toán 1 - bản cập nhật",
+  "description": "Bổ sung thêm ví dụ chương 1",
+  "subjectName": "Math",
+  "accessType": "PUBLIC"
+}
+----
+
+_Các trường được phép cập nhật:_
+
+[cols="2,2,3,5",options="header"]
+|===
+| Trường       | Kiểu   | Bắt buộc | Ghi chú
+
+| `title`      | string (1..55)   | no | Tiêu đề mới
+| `description`| string (<= 155)  | no | Mô tả mới
+| `subjectName`| string (<= 30)   | no | Môn/chủ đề
+| `accessType` | enum             | no | `PUBLIC` / `PRIVATE`
+|===
+
+*Response*
+
+_200 OK_
+
+[source,json]
+----
+{
+  "message": "Update success",
+  "document": {
+    "id": 10,
+    "title": "Tài liệu ôn tập Toán 1 - bản cập nhật",
+    "description": "Bổ sung thêm ví dụ chương 1",
+    "fileUrl": "https://cdn.example.com/documents/10.pdf",
+    "fileType": "pdf",
+    "fileSize": 123456,
+    "subjectName": "Math",
+    "accessType": "PUBLIC",
+    "ownerId": 42,
+    "created": "2025-02-10T12:30:00",
+    "updated": "2025-02-11T09:00:00"
+  }
+}
+----
+
+_400 Bad Request_
+
+[source,json]
+----
+{
+  "timestamp": "2025-02-11T09:00:00",
+  "status": 400,
+  "message": "Invalid input",
+  "details": {
+    "title": "size must be between 1 and 55"
+  }
+}
+----
+
+_401 Unauthorized_
+
+[source,json]
+----
+{
+  "timestamp": "2025-02-11T09:00:00",
+  "status": 401,
+  "message": "Access denied (Bạn không có quyền sửa tài liệu này)",
+  "details": null
+}
+----
+
+=== Delete Document
+
+==== DELETE /document/{documentId}
+
+Soft delete tài liệu: đánh dấu `is_active = false`.
+Chỉ `owner` hoặc `ADMIN` được phép xoá.
+
+*Request*
+
+[source]
+----
+DELETE /api/document/10
+----
+
+*Response*
+
+_200 OK_
+
+[source,json]
+----
+{
+  "message": "Delete success"
+}
+----
+
+_404 Not Found_
+
+[source,json]
+----
+{
+  "timestamp": "2025-02-11T10:00:00",
+  "status": 404,
+  "message": "Document not found",
+  "details": null
+}
+----
+
+_401 Unauthorized_
+
+[source,json]
+----
+{
+  "timestamp": "2025-02-11T10:00:00",
+  "status": 401,
+  "message": "Access denied",
+  "details": null
+}
+----

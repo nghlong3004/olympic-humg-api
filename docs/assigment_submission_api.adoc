@@ -1,0 +1,336 @@
+== Assignment Submission API
+
+=== Introduction
+
+Module `Assignment Submission` chịu trách nhiệm:
+
+* Ghi nhận việc sinh viên nộp bài cho một `assignment`.
+* Quản lý trạng thái chấm điểm của bài nộp.
+* Cho phép giảng viên xem danh sách bài nộp, cập nhật điểm.
+
+Các trạng thái (`status`):
+
+* `PENDING` – đã tạo submission, đang chờ sinh viên nộp / chờ chấm.
+* `SUBMITTED` – sinh viên đã nộp, đang chờ chấm.
+* `GRADED` – đã chấm điểm.
+
+=== AssignmentSubmissionResponse Data Type
+
+[cols="2,2,6",options="header"]
+|===
+| Trường        | Kiểu     | Ghi chú
+
+| `id`          | number   | ID submission
+| `assignmentId`| number   | ID assignment
+| `studentId`   | number   | ID sinh viên
+| `status`      | enum     | `PENDING`, `SUBMITTED`, `GRADED`
+| `scoreTotal`  | number   | Tổng điểm, có thể null nếu chưa chấm
+| `submitted`   | datetime | Thời điểm nộp bài
+| `graded`      | datetime | Thời điểm chấm xong, có thể null
+|===
+
+=== Create or Submit Assignment
+
+==== POST /assignment/{assignmentId}/submission
+
+Sinh viên nộp bài cho một assignment.
+Tuỳ business logic, hệ thống sẽ:
+* Tạo mới submission nếu chưa tồn tại.
+* Hoặc cập nhật submission hiện tại và chuyển trạng thái sang `SUBMITTED`.
+
+*Request*
+
+_Method_
+
+[source]
+----
+POST /api/assignment/5/submission
+----
+
+_Headers_
+
+[source]
+----
+Content-Type: application/json
+Cookie: JSESSIONID=abc123xyz;
+----
+
+_Body_ (gợi ý – mở rộng payload đáp án chi tiết sau này nếu cần)
+
+[source,json]
+----
+{
+  "status": "SUBMITTED"
+}
+----
+
+*Response*
+
+_201 Created_
+
+[source,json]
+----
+{
+  "id": 1000,
+  "assignmentId": 5,
+  "studentId": 99,
+  "status": "SUBMITTED",
+  "scoreTotal": null,
+  "submitted": "2025-03-02T20:15:00",
+  "graded": null
+}
+----
+
+_400 Bad Request_
+
+[source,json]
+----
+{
+  "timestamp": "2025-03-02T20:16:00",
+  "status": 400,
+  "message": "Dữ liệu không hợp lệ",
+  "details": {
+    "status": "Trạng thái không hợp lệ"
+  }
+}
+----
+
+_404 Not Found_
+
+[source,json]
+----
+{
+  "timestamp": "2025-03-02T20:16:00",
+  "status": 404,
+  "message": "Assignment not found",
+  "details": null
+}
+----
+
+_401 Unauthorized / 403 Forbidden_
+
+[source,json]
+----
+{
+  "timestamp": "2025-03-02T20:16:00",
+  "status": 403,
+  "message": "Bạn không có quyền nộp bài cho assignment này",
+  "details": null
+}
+----
+
+=== Get My Submission for Assignment
+
+==== GET /assignment/{assignmentId}/submission/me
+
+Sinh viên xem thông tin bài nộp của chính mình cho assignment đó.
+
+*Request*
+
+[source]
+----
+GET /api/assignment/5/submission/me
+----
+
+*Response*
+
+_200 OK_
+
+[source,json]
+----
+{
+  "id": 1000,
+  "assignmentId": 5,
+  "studentId": 99,
+  "status": "GRADED",
+  "scoreTotal": 8,
+  "submitted": "2025-03-02T20:15:00",
+  "graded": "2025-03-03T10:00:00"
+}
+----
+
+_404 Not Found_
+
+[source,json]
+----
+{
+  "timestamp": "2025-03-02T20:20:00",
+  "status": 404,
+  "message": "Submission not found (Bạn chưa làm bài này)",
+  "details": null
+}
+----
+
+_401 Unauthorized_
+
+[source,json]
+----
+{
+  "timestamp": "2025-03-02T20:20:00",
+  "status": 401,
+  "message": "Not authenticated",
+  "details": null
+}
+----
+
+=== Get Submissions of Assignment (Teacher/Admin)
+
+==== GET /assignment/{assignmentId}/submission
+
+Giảng viên hoặc admin xem danh sách bài nộp cho một assignment.
+
+*Request*
+
+[source]
+----
+GET /api/assignment/5/submission?page=0&size=20&status=SUBMITTED
+----
+
+_Query params_
+
+[cols="2,2,3,5",options="header"]
+|===
+| Tham số  | Kiểu   | Bắt buộc | Ghi chú
+
+| `page`   | number | no       | Mặc định = 0
+| `size`   | number | no       | Mặc định = 20
+| `status` | enum   | no       | Filter theo `PENDING` / `SUBMITTED` / `GRADED`
+|===
+
+*Response*
+
+_200 OK_
+
+[source,json]
+----
+{
+  "content": [
+    {
+      "id": 1000,
+      "assignmentId": 5,
+      "studentId": 99,
+      "status": "SUBMITTED",
+      "scoreTotal": null,
+      "submitted": "2025-03-02T20:15:00",
+      "graded": null
+    }
+  ],
+  "page": 0,
+  "size": 20,
+  "totalElements": 1,
+  "totalPages": 1
+}
+----
+
+_404 Not Found_
+
+[source,json]
+----
+{
+  "timestamp": "2025-03-02T20:25:00",
+  "status": 404,
+  "message": "Assignment not found",
+  "details": null
+}
+----
+
+_403 Forbidden_
+
+[source,json]
+----
+{
+  "timestamp": "2025-03-02T20:25:00",
+  "status": 403,
+  "message": "Access denied (Chỉ giảng viên/admin mới được xem danh sách)",
+  "details": null
+}
+----
+
+=== Grade Submission (Update Score & Status)
+
+==== PATCH /assignment/submission/{submissionId}
+
+Giảng viên/ADMIN chấm bài: cập nhật `scoreTotal` và trạng thái `status = GRADED`.
+
+*Request*
+
+[source]
+----
+PATCH /api/assignment/submission/1000
+----
+
+_Headers_
+
+[source]
+----
+Content-Type: application/json
+Cookie: JSESSIONID=abc123xyz;
+----
+
+_Body_
+
+[source,json]
+----
+{
+  "scoreTotal": 8,
+  "status": "GRADED"
+}
+----
+
+*Response*
+
+_200 OK_
+
+[source,json]
+----
+{
+  "message": "Update success",
+  "submission": {
+    "id": 1000,
+    "assignmentId": 5,
+    "studentId": 99,
+    "status": "GRADED",
+    "scoreTotal": 8,
+    "submitted": "2025-03-02T20:15:00",
+    "graded": "2025-03-03T10:00:00"
+  }
+}
+----
+
+_400 Bad Request_
+
+[source,json]
+----
+{
+  "timestamp": "2025-03-03T10:01:00",
+  "status": 400,
+  "message": "Dữ liệu chấm điểm không hợp lệ",
+  "details": {
+    "scoreTotal": "Điểm số không được âm"
+  }
+}
+----
+
+_404 Not Found_
+
+[source,json]
+----
+{
+  "timestamp": "2025-03-03T10:01:00",
+  "status": 404,
+  "message": "Submission not found",
+  "details": null
+}
+----
+
+_403 Forbidden_
+
+[source,json]
+----
+{
+  "timestamp": "2025-03-03T10:01:00",
+  "status": 403,
+  "message": "Access denied",
+  "details": null
+}
+----

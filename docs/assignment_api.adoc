@@ -1,0 +1,411 @@
+== Assignment API
+
+=== Introduction
+
+Module `Assignment` chịu trách nhiệm:
+
+* Tạo bài tập / bài kiểm tra (giảng viên).
+* Cập nhật thông tin bài tập.
+* Lấy danh sách bài tập, lọc theo môn, thời gian, giảng viên.
+* Lấy chi tiết 1 bài tập.
+
+=== AssignmentResponse Data Type
+
+Dùng cho các API trả về thông tin bài tập.
+
+[cols="2,2,6",options="header"]
+|===
+| Trường         | Kiểu     | Ghi chú
+
+| `id`           | number   | ID assignment
+| `title`        | string   | Tiêu đề (<= 55 ký tự)
+| `description`  | string   | Mô tả ngắn (<= 155 ký tự), có thể null
+| `subjectName`  | string   | Tên môn/chủ đề (<= 30 ký tự), có thể null
+| `ownerId`      | number   | ID giảng viên tạo assignment
+| `startTime`    | datetime | Thời gian mở (có thể null)
+| `endTime`      | datetime | Hạn nộp (có thể null)
+| `isActive`     | boolean  | `true` nếu assignment còn hiệu lực
+| `created`      | datetime | Thời điểm tạo
+| `updated`      | datetime | Thời điểm cập nhật gần nhất
+|===
+
+=== Create Assignment
+
+==== POST /assignment
+
+Giảng viên/Admin tạo một assignment mới.
+
+*Request*
+
+_Method_
+
+[source]
+----
+POST /api/assignment
+----
+
+_Headers_
+
+[source]
+----
+Content-Type: application/json
+Cookie: JSESSIONID=abc123xyz;
+----
+
+_Body_
+
+[source,json]
+----
+{
+  "title": "Bài tập chương 1 - Giới hạn",
+  "description": "Làm các bài tập từ 1 đến 10 trong slide chương 1",
+  "subjectName": "Math",
+  "startTime": "2025-03-01T08:00:00",
+  "endTime": "2025-03-07T23:59:59"
+}
+----
+
+_Data Constraints_
+
+[cols="2,2,3,5",options="header"]
+|===
+| Trường        | Kiểu            | Bắt buộc | Ghi chú
+
+| `title`       | string (1..55)  | yes      | Tiêu đề assignment
+| `description` | string (<= 155) | no       | Mô tả ngắn
+| `subjectName` | string (<= 30)  | no       | Tên môn/chủ đề, ví dụ: `"Math"`, `"Physics"`
+| `startTime`   | datetime        | no       | Thời điểm bắt đầu, format `YYYY-MM-DDThh:mm:ss`
+| `endTime`     | datetime        | no       | Hạn nộp, format `YYYY-MM-DDThh:mm:ss`
+|===
+
+*Response*
+
+_201 Created_
+
+[source,json]
+----
+{
+  "id": 5,
+  "title": "Bài tập chương 1 - Giới hạn",
+  "description": "Làm các bài tập từ 1 đến 10 trong slide chương 1",
+  "subjectName": "Math",
+  "ownerId": 42,
+  "startTime": "2025-03-01T08:00:00",
+  "endTime": "2025-03-07T23:59:59",
+  "isActive": true,
+  "created": "2025-02-10T12:30:00",
+  "updated": "2025-02-10T12:30:00"
+}
+----
+
+_400 Bad Request_
+
+[source,json]
+----
+{
+  "timestamp": "2025-02-10T12:31:00",
+  "status": 400,
+  "message": "Dữ liệu đầu vào không hợp lệ",
+  "details": {
+    "title": "must not be blank",
+    "startTime": "must be a valid date"
+  }
+}
+----
+
+_401 Unauthorized_
+
+[source,json]
+----
+{
+  "timestamp": "2025-02-10T12:31:00",
+  "status": 401,
+  "message": "Access denied (Chỉ giảng viên mới được tạo bài tập)",
+  "details": null
+}
+----
+
+=== Get Assignment List
+
+==== GET /assignment
+
+Lấy danh sách assignment, có phân trang và filter cơ bản.
+
+*Request*
+
+_Method_
+
+[source]
+----
+GET /api/assignment
+----
+
+_Query params_
+
+[cols="2,2,3,5",options="header"]
+|===
+| Tham số      | Kiểu     | Bắt buộc | Ghi chú
+
+| `page`       | number   | no       | Mặc định = 0
+| `size`       | number   | no       | Mặc định = 20
+| `subject`    | string   | no       | Filter theo `subjectName`
+| `ownerId`    | number   | no       | Filter theo giảng viên tạo assignment
+| `active`     | boolean  | no       | Nếu `true` chỉ lấy assignment `isActive = true`
+| `fromStart`  | datetime | no       | Lọc assignment có `startTime >= fromStart`
+| `toEnd`      | datetime | no       | Lọc assignment có `endTime <= toEnd`
+|===
+
+_Ví dụ_
+
+[source]
+----
+GET /api/assignment?page=0&size=10
+GET /api/assignment?subject=Math&page=0&size=10
+GET /api/assignment?ownerId=42&active=true&page=0&size=20
+GET /api/assignment?fromStart=2025-03-01T00:00:00&toEnd=2025-03-31T23:59:59
+----
+
+*Response*
+
+_200 OK_
+
+[source,json]
+----
+{
+  "content": [
+    {
+      "id": 5,
+      "title": "Bài tập chương 1 - Giới hạn",
+      "description": "Làm các bài tập từ 1 đến 10 trong slide chương 1",
+      "subjectName": "Math",
+      "ownerId": 42,
+      "startTime": "2025-03-01T08:00:00",
+      "endTime": "2025-03-07T23:59:59",
+      "isActive": true,
+      "created": "2025-02-10T12:30:00",
+      "updated": "2025-02-10T12:30:00"
+    }
+  ],
+  "page": 0,
+  "size": 10,
+  "totalElements": 1,
+  "totalPages": 1
+}
+----
+
+_401 Unauthorized_
+
+[source,json]
+----
+{
+  "timestamp": "2025-02-10T12:35:00",
+  "status": 401,
+  "message": "Not authenticated",
+  "details": null
+}
+----
+
+=== Get Assignment Detail
+
+==== GET /assignment/{assignmentId}
+
+Lấy chi tiết một assignment theo `assignmentId`.
+
+*Request*
+
+[source]
+----
+GET /api/assignment/5
+----
+
+*Response*
+
+_200 OK_
+
+[source,json]
+----
+{
+  "id": 5,
+  "title": "Bài tập chương 1 - Giới hạn",
+  "description": "Làm các bài tập từ 1 đến 10 trong slide chương 1",
+  "subjectName": "Math",
+  "ownerId": 42,
+  "startTime": "2025-03-01T08:00:00",
+  "endTime": "2025-03-07T23:59:59",
+  "isActive": true,
+  "created": "2025-02-10T12:30:00",
+  "updated": "2025-02-10T12:30:00"
+}
+----
+
+_404 Not Found_
+
+[source,json]
+----
+{
+  "timestamp": "2025-02-10T12:40:00",
+  "status": 404,
+  "message": "Assignment not found",
+  "details": null
+}
+----
+
+_401 Unauthorized_
+
+[source,json]
+----
+{
+  "timestamp": "2025-02-10T12:40:00",
+  "status": 401,
+  "message": "Access denied",
+  "details": null
+}
+----
+
+=== Update Assignment
+
+==== PATCH /assignment/{assignmentId}
+
+Cho phép cập nhật metadata của assignment.
+Chỉ `owner` (giảng viên tạo) hoặc `ADMIN` được phép sửa.
+
+*Request*
+
+[source]
+----
+PATCH /api/assignment/5
+----
+
+_Headers_
+
+[source]
+----
+Content-Type: application/json
+Cookie: JSESSIONID=abc123xyz;
+----
+
+_Body_
+
+[source,json]
+----
+{
+  "title": "Bài tập chương 1 - Giới hạn",
+  "description": "Thêm phần bài tập tự luận",
+  "subjectName": "Math",
+  "startTime": "2025-03-01T08:00:00",
+  "endTime": "2025-03-08T23:59:59",
+  "isActive": true
+}
+----
+
+_Các trường có thể cập nhật:_
+
+[cols="2,2,3,5",options="header"]
+|===
+| Trường        | Kiểu            | Bắt buộc | Ghi chú
+
+| `title`       | string (1..55)  | no       | Tiêu đề mới
+| `description` | string (<= 155) | no       | Mô tả mới
+| `subjectName` | string (<= 30)  | no       | Môn/chủ đề
+| `startTime`   | datetime        | no       | Thời gian mở
+| `endTime`     | datetime        | no       | Hạn nộp
+| `isActive`    | boolean         | no       | Đóng/mở assignment
+|===
+
+*Response*
+
+_200 OK_
+
+[source,json]
+----
+{
+  "message": "Update success",
+  "assignment": {
+    "id": 5,
+    "title": "Bài tập chương 1 - Giới hạn (cập nhật)",
+    "description": "Thêm phần bài tập tự luận",
+    "subjectName": "Math",
+    "ownerId": 42,
+    "startTime": "2025-03-01T08:00:00",
+    "endTime": "2025-03-08T23:59:59",
+    "isActive": true,
+    "created": "2025-02-10T12:30:00",
+    "updated": "2025-02-11T09:00:00"
+  }
+}
+----
+
+_400 Bad Request_
+
+[source,json]
+----
+{
+  "timestamp": "2025-02-11T09:01:00",
+  "status": 400,
+  "message": "Dữ liệu không hợp lệ",
+  "details": {
+    "startTime": "Start time must be before End time"
+  }
+}
+----
+
+_401 Unauthorized_
+
+[source,json]
+----
+{
+  "timestamp": "2025-02-11T09:01:00",
+  "status": 401,
+  "message": "Access denied (Bạn không có quyền sửa bài tập này)",
+  "details": null
+}
+----
+
+=== Delete Assignment
+
+==== DELETE /assignment/{assignmentId}
+
+Soft delete assignment: set `is_active = false`.
+Assignment vẫn tồn tại trong database để giữ lịch sử, liên kết với `question` và `assignment_submission`.
+
+*Request*
+
+[source]
+----
+DELETE /api/assignment/5
+----
+
+*Response*
+
+_200 OK_
+
+[source,json]
+----
+{
+  "message": "Delete success"
+}
+----
+
+_404 Not Found_
+
+[source,json]
+----
+{
+  "timestamp": "2025-02-11T10:00:00",
+  "status": 404,
+  "message": "Assignment not found",
+  "details": null
+}
+----
+
+_401 Unauthorized_
+
+[source,json]
+----
+{
+  "timestamp": "2025-02-11T10:00:00",
+  "status": 401,
+  "message": "Access denied",
+  "details": null
+}
+----
