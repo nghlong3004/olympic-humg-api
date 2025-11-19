@@ -4,8 +4,8 @@
 
 Module `Document` chịu trách nhiệm:
 
-* Giảng viên/Admin upload tài liệu
-* Sinh viên xem danh sách tài liệu, xem chi tiết
+* Giảng viên/Admin upload tài liệu.
+* Sinh viên xem danh sách tài liệu, xem chi tiết.
 
 === DocumentResponse Data Type
 
@@ -54,7 +54,7 @@ Content-Type: multipart/form-data
 Cookie: JSESSIONID=abc123xyz;
 ----
 
-Body
+_Body_
 
 [cols="2,2,3,5",options="header"]
 |===
@@ -91,7 +91,7 @@ Body
 
 *Response*
 
-201 Created
+_201 Created_
 
 [source,json]
 ----
@@ -110,25 +110,30 @@ Body
 }
 ----
 
-400 Bad Request
+_400 Bad Request_
 
 [source,json]
 ----
 {
-  "message": "Invalid input",
-  "error": [
-    "title must not be blank",
-    "file is required"
-  ]
+  "timestamp": "2025-02-10T12:30:00",
+  "status": 400,
+  "message": "Dữ liệu không hợp lệ",
+  "details": {
+    "title": "must not be blank",
+    "file": "is required"
+  }
 }
 ----
 
-401 Unauthorized
+_401 Unauthorized_
 
 [source,json]
 ----
 {
-  "message": "Access denied"
+  "timestamp": "2025-02-10T12:30:00",
+  "status": 401,
+  "message": "Access denied (Chỉ giảng viên mới được upload)",
+  "details": null
 }
 ----
 
@@ -205,7 +210,10 @@ _401 Unauthorized_
 [source,json]
 ----
 {
-  "message": "Not authenticated"
+  "timestamp": "2025-02-10T12:35:00",
+  "status": 401,
+  "message": "Not authenticated",
+  "details": null
 }
 ----
 
@@ -248,16 +256,22 @@ _404 Not Found_
 [source,json]
 ----
 {
-  "message": "Document not found"
+  "timestamp": "2025-02-10T12:40:00",
+  "status": 404,
+  "message": "Document not found",
+  "details": null
 }
 ----
 
-401 Unauthorized
+_401 Unauthorized_
 
 [source,json]
 ----
 {
-  "message": "Access denied"
+  "timestamp": "2025-02-10T12:40:00",
+  "status": 401,
+  "message": "Access denied",
+  "details": null
 }
 ----
 
@@ -336,16 +350,24 @@ _400 Bad Request_
 [source,json]
 ----
 {
-  "message": "Invalid input"
+  "timestamp": "2025-02-11T09:00:00",
+  "status": 400,
+  "message": "Invalid input",
+  "details": {
+    "title": "size must be between 1 and 55"
+  }
 }
 ----
 
-401 Unauthorized
+_401 Unauthorized_
 
 [source,json]
 ----
 {
-  "message": "Access denied"
+  "timestamp": "2025-02-11T09:00:00",
+  "status": 401,
+  "message": "Access denied (Bạn không có quyền sửa tài liệu này)",
+  "details": null
 }
 ----
 
@@ -379,15 +401,21 @@ _404 Not Found_
 [source,json]
 ----
 {
-  "message": "Document not found"
+  "timestamp": "2025-02-11T10:00:00",
+  "status": 404,
+  "message": "Document not found",
+  "details": null
 }
 ----
 
-401 Unauthorized
+_401 Unauthorized_
 
 [source,json]
 ----
 {
-  "message": "Access denied"
+  "timestamp": "2025-02-11T10:00:00",
+  "status": 401,
+  "message": "Access denied",
+  "details": null
 }
 ----

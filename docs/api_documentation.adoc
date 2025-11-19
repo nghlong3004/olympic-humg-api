@@ -52,6 +52,39 @@ http://localhost:8080/api
 | Một trong những giá trị cho phép
 |===
 
+=== ErrorResponse Data Type
+
+[cols="2,2,6",options="header"]
+|===
+| Trường | Kiểu | Ghi chú
+
+| `timestamp`
+| datetime
+| Thời điểm xảy ra lỗi
+
+| `status`
+| number
+| Mã lỗi HTTP
+
+| `message`
+| string
+| Thông báo lỗi chung để hiển thị cho người dùng
+
+| `details`
+| map<string, string>
+| Dùng khi lỗi Validation (400). Key là tên field, Value là nội dung lỗi.
+|===
+
+=== Authorization & Roles
+
+* Cơ chế auth: `session-cookie` với cookie `JSESSIONID`.
+* Các role chính:
+** `STUDENT`
+** `TEACHER`
+** `ADMIN`
+* Tất cả endpoint (trừ Auth) yêu cầu cookie `JSESSIONID` hợp lệ.
+
+
 include::auth_api.adoc[Auth API]
 
 include::user_api.adoc[User API]

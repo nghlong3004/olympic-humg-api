@@ -4,9 +4,9 @@
 
 Module `Auth` chịu trách nhiệm:
 
-* Đăng ký tài khoản (mặc định role = `STUDENT`)
-* Đăng nhập (sử dụng session-cookie)
-* Đăng xuất (huỷ session hiện tại)
+* Register.
+* Login.
+* Logout.
 
 === Register
 
@@ -105,27 +105,34 @@ _Data Constraints_
 
 *Response*
 
-201 Created
+_201 Created_
 
-400 Bad Request
+(Server trả về mã 201, có thể không cần body hoặc trả về thông tin user vừa tạo)
+
+_400 Bad Request_
 
 [source,json]
 ----
 {
-  "message": "Invalid input",
-  "error": [
-    "email must be a valid email address",
-    "password must be at least 6 characters"
-  ]
+  "timestamp": "2025-02-10T10:00:00",
+  "status": 400,
+  "message": "Dữ liệu không hợp lệ",
+  "details": {
+    "email": "must be a valid email address",
+    "password": "must be at least 6 characters"
+  }
 }
 ----
 
-409 Conflict
+_409 Conflict_
 
 [source,json]
 ----
 {
-  "message": "Email already exists"
+  "timestamp": "2025-02-10T10:05:00",
+  "status": 409,
+  "message": "Email already exists",
+  "details": null
 }
 ----
 
@@ -164,7 +171,7 @@ _Body_
 
 *Response*
 
-200 OK
+_200 OK_
 
 [source,json]
 ----
@@ -193,12 +200,15 @@ _Cookie (Set-Cookie)_
 Set-Cookie: JSESSIONID=abc123xyz; HttpOnly; Secure; Path=/;
 ----
 
-401 Unauthorized
+_401 Unauthorized_
 
 [source,json]
 ----
 {
-  "message": "Invalid email or password"
+  "timestamp": "2025-02-10T10:10:00",
+  "status": 401,
+  "message": "Sai email hoặc mật khẩu",
+  "details": null
 }
 ----
 
@@ -227,18 +237,21 @@ Cookie: JSESSIONID=abc123xyz;
 
 *Response*
 
-200 OK
+_200 OK_
 
 [source]
 ----
 Set-Cookie: JSESSIONID=; Max-Age=0; HttpOnly; Secure; Path=/;
 ----
 
-401 Unauthorized
+_401 Unauthorized_
 
 [source,json]
 ----
 {
-  "message": "Not authenticated"
+  "timestamp": "2025-02-10T10:15:00",
+  "status": 401,
+  "message": "Chưa đăng nhập",
+  "details": null
 }
 ----

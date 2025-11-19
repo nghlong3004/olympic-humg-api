@@ -4,13 +4,15 @@
 
 Module `Assignment Submission` chịu trách nhiệm:
 
-* Ghi nhận việc sinh viên nộp bài cho một `assignment`
-* Quản lý trạng thái chấm điểm của bài nộp
-* Cho phép giảng viên xem danh sách bài nộp, cập nhật điểm
+* Ghi nhận việc sinh viên nộp bài cho một `assignment`.
+* Quản lý trạng thái chấm điểm của bài nộp.
+* Cho phép giảng viên xem danh sách bài nộp, cập nhật điểm.
 
-* `PENDING` – đã tạo submission, đang chờ sinh viên nộp / chờ chấm
-* `SUBMITTED` – sinh viên đã nộp, đang chờ chấm
-* `GRADED` – đã chấm điểm
+Các trạng thái (`status`):
+
+* `PENDING` – đã tạo submission, đang chờ sinh viên nộp / chờ chấm.
+* `SUBMITTED` – sinh viên đã nộp, đang chờ chấm.
+* `GRADED` – đã chấm điểm.
 
 === AssignmentSubmissionResponse Data Type
 
@@ -32,10 +34,9 @@ Module `Assignment Submission` chịu trách nhiệm:
 ==== POST /assignment/{assignmentId}/submission
 
 Sinh viên nộp bài cho một assignment.
-Tuỳ business bạn có thể:
-
-* Tạo mới submission nếu chưa tồn tại
-* Hoặc cập nhật submission hiện tại và chuyển trạng thái sang `SUBMITTED`
+Tuỳ business logic, hệ thống sẽ:
+* Tạo mới submission nếu chưa tồn tại.
+* Hoặc cập nhật submission hiện tại và chuyển trạng thái sang `SUBMITTED`.
 
 *Request*
 
@@ -54,7 +55,7 @@ Content-Type: application/json
 Cookie: JSESSIONID=abc123xyz;
 ----
 
-_Body_ (gợi ý – nếu sau này thêm payload đáp án chi tiết, có thể mở rộng)
+_Body_ (gợi ý – mở rộng payload đáp án chi tiết sau này nếu cần)
 
 [source,json]
 ----
@@ -65,7 +66,7 @@ _Body_ (gợi ý – nếu sau này thêm payload đáp án chi tiết, có th�
 
 *Response*
 
-_201 Created_ hoặc _200 OK_ (tùy implement)
+_201 Created_
 
 [source,json]
 ----
@@ -85,7 +86,12 @@ _400 Bad Request_
 [source,json]
 ----
 {
-  "message": "Invalid input"
+  "timestamp": "2025-03-02T20:16:00",
+  "status": 400,
+  "message": "Dữ liệu không hợp lệ",
+  "details": {
+    "status": "Trạng thái không hợp lệ"
+  }
 }
 ----
 
@@ -94,16 +100,22 @@ _404 Not Found_
 [source,json]
 ----
 {
-  "message": "Assignment not found"
+  "timestamp": "2025-03-02T20:16:00",
+  "status": 404,
+  "message": "Assignment not found",
+  "details": null
 }
 ----
 
-401 Unauthorized
+_401 Unauthorized / 403 Forbidden_
 
 [source,json]
 ----
 {
-  "message": "Access denied"
+  "timestamp": "2025-03-02T20:16:00",
+  "status": 403,
+  "message": "Bạn không có quyền nộp bài cho assignment này",
+  "details": null
 }
 ----
 
@@ -142,16 +154,22 @@ _404 Not Found_
 [source,json]
 ----
 {
-  "message": "Submission not found"
+  "timestamp": "2025-03-02T20:20:00",
+  "status": 404,
+  "message": "Submission not found (Bạn chưa làm bài này)",
+  "details": null
 }
 ----
 
-401 Unauthorized
+_401 Unauthorized_
 
 [source,json]
 ----
 {
-  "message": "Not authenticated"
+  "timestamp": "2025-03-02T20:20:00",
+  "status": 401,
+  "message": "Not authenticated",
+  "details": null
 }
 ----
 
@@ -209,16 +227,22 @@ _404 Not Found_
 [source,json]
 ----
 {
-  "message": "Assignment not found"
+  "timestamp": "2025-03-02T20:25:00",
+  "status": 404,
+  "message": "Assignment not found",
+  "details": null
 }
 ----
 
-401 Unauthorized
+_403 Forbidden_
 
 [source,json]
 ----
 {
-  "message": "Access denied"
+  "timestamp": "2025-03-02T20:25:00",
+  "status": 403,
+  "message": "Access denied (Chỉ giảng viên/admin mới được xem danh sách)",
+  "details": null
 }
 ----
 
@@ -278,7 +302,12 @@ _400 Bad Request_
 [source,json]
 ----
 {
-  "message": "Invalid input"
+  "timestamp": "2025-03-03T10:01:00",
+  "status": 400,
+  "message": "Dữ liệu chấm điểm không hợp lệ",
+  "details": {
+    "scoreTotal": "Điểm số không được âm"
+  }
 }
 ----
 
@@ -287,15 +316,21 @@ _404 Not Found_
 [source,json]
 ----
 {
-  "message": "Submission not found"
+  "timestamp": "2025-03-03T10:01:00",
+  "status": 404,
+  "message": "Submission not found",
+  "details": null
 }
 ----
 
-401 Unauthorized
+_403 Forbidden_
 
 [source,json]
 ----
 {
-  "message": "Access denied"
+  "timestamp": "2025-03-03T10:01:00",
+  "status": 403,
+  "message": "Access denied",
+  "details": null
 }
 ----

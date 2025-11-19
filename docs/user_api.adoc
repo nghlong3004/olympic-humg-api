@@ -4,12 +4,10 @@
 
 Module `User` chịu trách nhiệm:
 
-* Lấy thông tin người dùng hiện tại (`GET /user/me`)
-* Cập nhật thông tin người dùng hiện tại (`PATCH /user/me`)
-* Lấy thông tin chi tiết một user theo ID (`GET /user/{userId}`)
-* Tìm kiếm user theo tên, có phân trang (`GET /user`)
-
-Tất cả API trong module này yêu cầu người dùng đã đăng nhập bằng session-cookie `JSESSIONID`.
+* Lấy thông tin người dùng hiện tại (`GET /user/me`).
+* Cập nhật thông tin người dùng hiện tại (`PATCH /user/me`).
+* Lấy thông tin chi tiết một user theo ID (`GET /user/{userId}`).
+* Tìm kiếm user theo tên, có phân trang (`GET /user`).
 
 === UserResponse Data Type
 
@@ -82,7 +80,10 @@ _401 Unauthorized_
 [source,json]
 ----
 {
-  "message": "Not authenticated"
+  "timestamp": "2025-02-10T12:30:00",
+  "status": 401,
+  "message": "Not authenticated",
+  "details": null
 }
 ----
 
@@ -158,11 +159,13 @@ _400 Bad Request_
 [source,json]
 ----
 {
+  "timestamp": "2025-02-11T09:00:00",
+  "status": 400,
   "message": "Invalid input",
-  "error": [
-    "firstName must not be blank",
-    "phone must be a valid phone number"
-  ]
+  "details": {
+    "firstName": "must not be blank",
+    "phone": "invalid phone number format"
+  }
 }
 ----
 
@@ -171,7 +174,10 @@ _401 Unauthorized_
 [source,json]
 ----
 {
-  "message": "Not authenticated"
+  "timestamp": "2025-02-11T09:00:00",
+  "status": 401,
+  "message": "Not authenticated",
+  "details": null
 }
 ----
 
@@ -211,21 +217,27 @@ _200 OK_
 }
 ----
 
-404 Not Found
+_404 Not Found_
 
 [source,json]
 ----
 {
-  "message": "User not found"
+  "timestamp": "2025-02-10T12:30:00",
+  "status": 404,
+  "message": "User not found",
+  "details": null
 }
 ----
 
-401 Unauthorized
+_401 Unauthorized_
 
 [source,json]
 ----
 {
-  "message": "Access denied"
+  "timestamp": "2025-02-10T12:30:00",
+  "status": 401,
+  "message": "Access denied",
+  "details": null
 }
 ----
 
@@ -256,7 +268,7 @@ _Query params_
 
 *Response*
 
-200 OK
+_200 OK_
 
 [source,json]
 ----
@@ -285,11 +297,14 @@ _Query params_
 }
 ----
 
-401 Unauthorized
+_401 Unauthorized_
 
 [source,json]
 ----
 {
-  "message": "Access denied"
+  "timestamp": "2025-02-10T12:35:00",
+  "status": 401,
+  "message": "Access denied",
+  "details": null
 }
 ----

@@ -4,13 +4,9 @@
 
 Module `Forum` chịu trách nhiệm:
 
-* Tạo thread thảo luận / đặt câu hỏi / thông báo
-* Trả về danh sách thread (có phân trang, lọc theo type, keyword, owner)
-* Quản lý các post (reply) trong thread
-
-Enum liên quan:
-
-* `thread_type`: `DISCUSSION`, `QUESTION`, `ANNOUNCEMENT`
+* Tạo thread thảo luận / đặt câu hỏi / thông báo.
+* Trả về danh sách thread (có phân trang, lọc theo type, keyword, owner).
+* Quản lý các post (reply) trong thread.
 
 === ThreadResponse Data Type
 
@@ -113,12 +109,15 @@ _200 OK_
 }
 ----
 
-401 Unauthorized
+_401 Unauthorized_
 
 [source,json]
 ----
 {
-  "message": "Not authenticated"
+  "timestamp": "2025-02-10T12:35:00",
+  "status": 401,
+  "message": "Not authenticated",
+  "details": null
 }
 ----
 
@@ -159,16 +158,22 @@ _404 Not Found_
 [source,json]
 ----
 {
-  "message": "Thread not found"
+  "timestamp": "2025-02-10T12:40:00",
+  "status": 404,
+  "message": "Thread not found",
+  "details": null
 }
 ----
 
-401 Unauthorized
+_401 Unauthorized_
 
 [source,json]
 ----
 {
-  "message": "Access denied"
+  "timestamp": "2025-02-10T12:40:00",
+  "status": 401,
+  "message": "Access denied",
+  "details": null
 }
 ----
 
@@ -180,9 +185,9 @@ Tạo mới một thread.
 
 *Quyền gợi ý*:
 
-* `STUDENT`: tạo được `DISCUSSION` và `QUESTION`
-* `TEACHER` / `ADMIN`: có thể tạo cả `ANNOUNCEMENT`
-* `isPinned` chỉ cho `ADMIN` (hoặc `TEACHER`) set
+* `STUDENT`: tạo được `DISCUSSION` và `QUESTION`.
+* `TEACHER` / `ADMIN`: có thể tạo cả `ANNOUNCEMENT`.
+* `isPinned`: chỉ cho `ADMIN` (hoặc `TEACHER`) set.
 
 *Request*
 
@@ -247,19 +252,25 @@ _400 Bad Request_
 [source,json]
 ----
 {
-  "message": "Invalid input",
-  "error": [
-    "title must not be blank"
-  ]
+  "timestamp": "2025-02-10T12:30:00",
+  "status": 400,
+  "message": "Dữ liệu không hợp lệ",
+  "details": {
+    "title": "must not be blank",
+    "content": "must not be blank"
+  }
 }
 ----
 
-401 Unauthorized
+_401 Unauthorized_
 
 [source,json]
 ----
 {
-  "message": "Access denied"
+  "timestamp": "2025-02-10T12:30:00",
+  "status": 401,
+  "message": "Access denied",
+  "details": null
 }
 ----
 
@@ -319,12 +330,29 @@ _200 OK_
 }
 ----
 
-401 Unauthorized
+_400 Bad Request_
 
 [source,json]
 ----
 {
-  "message": "Access denied"
+  "timestamp": "2025-02-11T09:00:00",
+  "status": 400,
+  "message": "Invalid input",
+  "details": {
+    "title": "size must be between 1 and 55"
+  }
+}
+----
+
+_401 Unauthorized_
+
+[source,json]
+----
+{
+  "timestamp": "2025-02-11T09:00:00",
+  "status": 401,
+  "message": "Access denied",
+  "details": null
 }
 ----
 
@@ -358,16 +386,22 @@ _404 Not Found_
 [source,json]
 ----
 {
-  "message": "Thread not found"
+  "timestamp": "2025-02-11T10:00:00",
+  "status": 404,
+  "message": "Thread not found",
+  "details": null
 }
 ----
 
-401 Unauthorized
+_401 Unauthorized_
 
 [source,json]
 ----
 {
-  "message": "Access denied"
+  "timestamp": "2025-02-11T10:00:00",
+  "status": 401,
+  "message": "Access denied",
+  "details": null
 }
 ----
 
@@ -416,6 +450,18 @@ _200 OK_
   "size": 20,
   "totalElements": 1,
   "totalPages": 1
+}
+----
+
+_404 Not Found_
+
+[source,json]
+----
+{
+  "timestamp": "2025-02-10T13:05:00",
+  "status": 404,
+  "message": "Thread not found",
+  "details": null
 }
 ----
 
@@ -475,12 +521,29 @@ _201 Created_
 }
 ----
 
+_400 Bad Request_
+
+[source,json]
+----
+{
+  "timestamp": "2025-02-10T13:00:00",
+  "status": 400,
+  "message": "Dữ liệu không hợp lệ",
+  "details": {
+    "content": "must not be blank"
+  }
+}
+----
+
 _404 Not Found_
 
 [source,json]
 ----
 {
-  "message": "Thread not found"
+  "timestamp": "2025-02-10T13:00:00",
+  "status": 404,
+  "message": "Thread not found",
+  "details": null
 }
 ----
 
@@ -489,7 +552,10 @@ _401 Unauthorized_
 [source,json]
 ----
 {
-  "message": "Not authenticated"
+  "timestamp": "2025-02-10T13:00:00",
+  "status": 401,
+  "message": "Not authenticated",
+  "details": null
 }
 ----
 
@@ -535,6 +601,18 @@ _200 OK_
 }
 ----
 
+_401 Unauthorized_
+
+[source,json]
+----
+{
+  "timestamp": "2025-02-11T09:10:00",
+  "status": 401,
+  "message": "Access denied",
+  "details": null
+}
+----
+
 === Delete Post
 
 ==== DELETE /forum/post/{postId}
@@ -556,5 +634,17 @@ _200 OK_
 ----
 {
   "message": "Delete success"
+}
+----
+
+_401 Unauthorized_
+
+[source,json]
+----
+{
+  "timestamp": "2025-02-11T10:00:00",
+  "status": 401,
+  "message": "Access denied",
+  "details": null
 }
 ----

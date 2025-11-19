@@ -4,15 +4,10 @@
 
 Module `Assignment` chịu trách nhiệm:
 
-* Tạo bài tập / bài kiểm tra (giảng viên)
-* Cập nhật thông tin bài tập
-* Lấy danh sách bài tập, lọc theo môn, thời gian, giảng viên
-* Lấy chi tiết 1 bài tập
-
-Quy ước quyền gợi ý:
-
-* `TEACHER` / `ADMIN`: tạo, cập nhật, xoá assignment
-* `STUDENT`: chỉ được xem danh sách + chi tiết các assignment đang mở/được phép xem
+* Tạo bài tập / bài kiểm tra (giảng viên).
+* Cập nhật thông tin bài tập.
+* Lấy danh sách bài tập, lọc theo môn, thời gian, giảng viên.
+* Lấy chi tiết 1 bài tập.
 
 === AssignmentResponse Data Type
 
@@ -108,19 +103,25 @@ _400 Bad Request_
 [source,json]
 ----
 {
-  "message": "Invalid input",
-  "error": [
-    "title must not be blank"
-  ]
+  "timestamp": "2025-02-10T12:31:00",
+  "status": 400,
+  "message": "Dữ liệu đầu vào không hợp lệ",
+  "details": {
+    "title": "must not be blank",
+    "startTime": "must be a valid date"
+  }
 }
 ----
 
-401 Unauthorized
+_401 Unauthorized_
 
 [source,json]
 ----
 {
-  "message": "Access denied"
+  "timestamp": "2025-02-10T12:31:00",
+  "status": 401,
+  "message": "Access denied (Chỉ giảng viên mới được tạo bài tập)",
+  "details": null
 }
 ----
 
@@ -192,12 +193,15 @@ _200 OK_
 }
 ----
 
-401 Unauthorized
+_401 Unauthorized_
 
 [source,json]
 ----
 {
-  "message": "Not authenticated"
+  "timestamp": "2025-02-10T12:35:00",
+  "status": 401,
+  "message": "Not authenticated",
+  "details": null
 }
 ----
 
@@ -239,16 +243,22 @@ _404 Not Found_
 [source,json]
 ----
 {
-  "message": "Assignment not found"
+  "timestamp": "2025-02-10T12:40:00",
+  "status": 404,
+  "message": "Assignment not found",
+  "details": null
 }
 ----
 
-401 Unauthorized
+_401 Unauthorized_
 
 [source,json]
 ----
 {
-  "message": "Access denied"
+  "timestamp": "2025-02-10T12:40:00",
+  "status": 401,
+  "message": "Access denied",
+  "details": null
 }
 ----
 
@@ -274,12 +284,12 @@ Content-Type: application/json
 Cookie: JSESSIONID=abc123xyz;
 ----
 
-_Body_ (tất cả field optional)
+_Body_
 
 [source,json]
 ----
 {
-  "title": "Bài tập chương 1 - Giới hạn (cập nhật)",
+  "title": "Bài tập chương 1 - Giới hạn",
   "description": "Thêm phần bài tập tự luận",
   "subjectName": "Math",
   "startTime": "2025-03-01T08:00:00",
@@ -304,7 +314,7 @@ _Các trường có thể cập nhật:_
 
 *Response*
 
-200 OK
+_200 OK_
 
 [source,json]
 ----
@@ -325,21 +335,29 @@ _Các trường có thể cập nhật:_
 }
 ----
 
-400 Bad Request
+_400 Bad Request_
 
 [source,json]
 ----
 {
-  "message": "Invalid input"
+  "timestamp": "2025-02-11T09:01:00",
+  "status": 400,
+  "message": "Dữ liệu không hợp lệ",
+  "details": {
+    "startTime": "Start time must be before End time"
+  }
 }
 ----
 
-401 Unauthorized
+_401 Unauthorized_
 
 [source,json]
 ----
 {
-  "message": "Access denied"
+  "timestamp": "2025-02-11T09:01:00",
+  "status": 401,
+  "message": "Access denied (Bạn không có quyền sửa bài tập này)",
+  "details": null
 }
 ----
 
@@ -359,7 +377,7 @@ DELETE /api/assignment/5
 
 *Response*
 
-200 OK
+_200 OK_
 
 [source,json]
 ----
@@ -368,20 +386,26 @@ DELETE /api/assignment/5
 }
 ----
 
-404 Not Found
+_404 Not Found_
 
 [source,json]
 ----
 {
-  "message": "Assignment not found"
+  "timestamp": "2025-02-11T10:00:00",
+  "status": 404,
+  "message": "Assignment not found",
+  "details": null
 }
 ----
 
-401 Unauthorized
+_401 Unauthorized_
 
 [source,json]
 ----
 {
-  "message": "Access denied"
+  "timestamp": "2025-02-11T10:00:00",
+  "status": 401,
+  "message": "Access denied",
+  "details": null
 }
 ----
