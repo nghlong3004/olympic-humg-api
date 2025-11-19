@@ -1,5 +1,7 @@
 == Question API
 
+'''
+
 === Introduction
 
 Module `Question` chịu trách nhiệm:
@@ -9,6 +11,8 @@ Module `Question` chịu trách nhiệm:
 ** `MULTIPLE_CHOICE` – trắc nghiệm nhiều lựa chọn.
 ** `SHORT_ANSWER` – trả lời ngắn.
 * Quản lý các option của câu hỏi trắc nghiệm (bảng `question_option`).
+
+'''
 
 === QuestionOptionResponse Data Type
 
@@ -22,6 +26,8 @@ Module `Question` chịu trách nhiệm:
 | `optionKey` | string | Key của option, ví dụ: `"A"`, `"B"`, `"C"`...
 | `content`   | string | Nội dung lựa chọn
 |===
+
+'''
 
 === QuestionResponse Data Type
 
@@ -42,6 +48,8 @@ Dùng cho các API trả về thông tin câu hỏi.
 | `created`       | datetime         | Thời điểm tạo
 | `updated`       | datetime         | Thời điểm cập nhật gần nhất
 |===
+
+'''
 
 === Get Questions of Assignment
 
@@ -106,17 +114,19 @@ _404 Not Found_
 }
 ----
 
-_401 Unauthorized_
+_403 FORBIDDEN_
 
 [source,json]
 ----
 {
   "timestamp": "2025-02-10T12:35:00",
-  "status": 401,
+  "status": 403,
   "message": "Access denied",
   "details": null
 }
 ----
+
+'''
 
 === Get Question Detail
 
@@ -180,6 +190,8 @@ _401 Unauthorized_
 }
 ----
 
+'''
+
 === Create Question
 
 ==== POST /assignment/{assignmentId}/question
@@ -203,7 +215,7 @@ Content-Type: application/json
 Cookie: JSESSIONID=abc123xyz;
 ----
 
-_Body (MULTIPLE_CHOICE)_
+_Body_
 
 [source,json]
 ----
@@ -300,17 +312,19 @@ _404 Not Found_
 }
 ----
 
-_401 Unauthorized_
+_403 FORBIDDEN_
 
 [source,json]
 ----
 {
   "timestamp": "2025-02-10T12:31:00",
-  "status": 401,
-  "message": "Access denied (Chỉ chủ sở hữu hoặc Admin mới được thêm câu hỏi)",
+  "status": 403,
+  "message": "Access denied",
   "details": null
 }
 ----
+
+'''
 
 === Update Question
 
@@ -331,7 +345,7 @@ Content-Type: application/json
 Cookie: JSESSIONID=abc123xyz;
 ----
 
-_Body_ (tất cả field optional – tuỳ implement có thể replace toàn bộ options)
+_Body_
 
 [source,json]
 ----
@@ -403,17 +417,19 @@ _404 Not Found_
 }
 ----
 
-_401 Unauthorized_
+_403 FORBIDDEN_
 
 [source,json]
 ----
 {
   "timestamp": "2025-02-11T09:01:00",
-  "status": 401,
+  "status": 403,
   "message": "Access denied",
   "details": null
 }
 ----
+
+'''
 
 === Delete Question
 
@@ -451,13 +467,13 @@ _404 Not Found_
 }
 ----
 
-_401 Unauthorized_
+_403 FORBIDDEN_
 
 [source,json]
 ----
 {
   "timestamp": "2025-02-11T10:00:00",
-  "status": 401,
+  "status": 403,
   "message": "Access denied",
   "details": null
 }

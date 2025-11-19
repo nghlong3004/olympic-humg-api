@@ -1,5 +1,7 @@
 == Assignment API
 
+'''
+
 === Introduction
 
 Module `Assignment` chịu trách nhiệm:
@@ -8,6 +10,8 @@ Module `Assignment` chịu trách nhiệm:
 * Cập nhật thông tin bài tập.
 * Lấy danh sách bài tập, lọc theo môn, thời gian, giảng viên.
 * Lấy chi tiết 1 bài tập.
+
+'''
 
 === AssignmentResponse Data Type
 
@@ -28,6 +32,8 @@ Dùng cho các API trả về thông tin bài tập.
 | `created`      | datetime | Thời điểm tạo
 | `updated`      | datetime | Thời điểm cập nhật gần nhất
 |===
+
+'''
 
 === Create Assignment
 
@@ -113,17 +119,19 @@ _400 Bad Request_
 }
 ----
 
-_401 Unauthorized_
+_403 Forbidden_
 
 [source,json]
 ----
 {
   "timestamp": "2025-02-10T12:31:00",
-  "status": 401,
-  "message": "Access denied (Chỉ giảng viên mới được tạo bài tập)",
+  "status": 403,
+  "message": "Access denied",
   "details": null
 }
 ----
+
+'''
 
 === Get Assignment List
 
@@ -205,6 +213,8 @@ _401 Unauthorized_
 }
 ----
 
+'''
+
 === Get Assignment Detail
 
 ==== GET /assignment/{assignmentId}
@@ -250,24 +260,25 @@ _404 Not Found_
 }
 ----
 
-_401 Unauthorized_
+_403 Forbidden_
 
 [source,json]
 ----
 {
   "timestamp": "2025-02-10T12:40:00",
-  "status": 401,
+  "status": 403,
   "message": "Access denied",
   "details": null
 }
 ----
+
+'''
 
 === Update Assignment
 
 ==== PATCH /assignment/{assignmentId}
 
 Cho phép cập nhật metadata của assignment.
-Chỉ `owner` (giảng viên tạo) hoặc `ADMIN` được phép sửa.
 
 *Request*
 
@@ -349,24 +360,25 @@ _400 Bad Request_
 }
 ----
 
-_401 Unauthorized_
+_403 Forbidden_
 
 [source,json]
 ----
 {
   "timestamp": "2025-02-11T09:01:00",
-  "status": 401,
-  "message": "Access denied (Bạn không có quyền sửa bài tập này)",
+  "status": 403,
+  "message": "Access denied",
   "details": null
 }
 ----
+
+'''
 
 === Delete Assignment
 
 ==== DELETE /assignment/{assignmentId}
 
 Soft delete assignment: set `is_active = false`.
-Assignment vẫn tồn tại trong database để giữ lịch sử, liên kết với `question` và `assignment_submission`.
 
 *Request*
 
@@ -398,13 +410,13 @@ _404 Not Found_
 }
 ----
 
-_401 Unauthorized_
+_403 Forbidden_
 
 [source,json]
 ----
 {
   "timestamp": "2025-02-11T10:00:00",
-  "status": 401,
+  "status": 403,
   "message": "Access denied",
   "details": null
 }

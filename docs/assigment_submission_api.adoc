@@ -1,5 +1,7 @@
 == Assignment Submission API
 
+'''
+
 === Introduction
 
 Module `Assignment Submission` chịu trách nhiệm:
@@ -8,11 +10,7 @@ Module `Assignment Submission` chịu trách nhiệm:
 * Quản lý trạng thái chấm điểm của bài nộp.
 * Cho phép giảng viên xem danh sách bài nộp, cập nhật điểm.
 
-Các trạng thái (`status`):
-
-* `PENDING` – đã tạo submission, đang chờ sinh viên nộp / chờ chấm.
-* `SUBMITTED` – sinh viên đã nộp, đang chờ chấm.
-* `GRADED` – đã chấm điểm.
+'''
 
 === AssignmentSubmissionResponse Data Type
 
@@ -28,6 +26,8 @@ Các trạng thái (`status`):
 | `submitted`   | datetime | Thời điểm nộp bài
 | `graded`      | datetime | Thời điểm chấm xong, có thể null
 |===
+
+'''
 
 === Create or Submit Assignment
 
@@ -55,7 +55,7 @@ Content-Type: application/json
 Cookie: JSESSIONID=abc123xyz;
 ----
 
-_Body_ (gợi ý – mở rộng payload đáp án chi tiết sau này nếu cần)
+_Body_
 
 [source,json]
 ----
@@ -107,17 +107,19 @@ _404 Not Found_
 }
 ----
 
-_401 Unauthorized / 403 Forbidden_
+_403 Forbidden_
 
 [source,json]
 ----
 {
   "timestamp": "2025-03-02T20:16:00",
   "status": 403,
-  "message": "Bạn không có quyền nộp bài cho assignment này",
+  "message": "Access denied",
   "details": null
 }
 ----
+
+'''
 
 === Get My Submission for Assignment
 
@@ -156,7 +158,7 @@ _404 Not Found_
 {
   "timestamp": "2025-03-02T20:20:00",
   "status": 404,
-  "message": "Submission not found (Bạn chưa làm bài này)",
+  "message": "Submission not found",
   "details": null
 }
 ----
@@ -173,7 +175,9 @@ _401 Unauthorized_
 }
 ----
 
-=== Get Submissions of Assignment (Teacher/Admin)
+'''
+
+=== Get Submissions of Assignment
 
 ==== GET /assignment/{assignmentId}/submission
 
@@ -241,12 +245,14 @@ _403 Forbidden_
 {
   "timestamp": "2025-03-02T20:25:00",
   "status": 403,
-  "message": "Access denied (Chỉ giảng viên/admin mới được xem danh sách)",
+  "message": "Access denied",
   "details": null
 }
 ----
 
-=== Grade Submission (Update Score & Status)
+'''
+
+=== Grade Submission
 
 ==== PATCH /assignment/submission/{submissionId}
 
@@ -304,7 +310,7 @@ _400 Bad Request_
 {
   "timestamp": "2025-03-03T10:01:00",
   "status": 400,
-  "message": "Dữ liệu chấm điểm không hợp lệ",
+  "message": "Data trash",
   "details": {
     "scoreTotal": "Điểm số không được âm"
   }
