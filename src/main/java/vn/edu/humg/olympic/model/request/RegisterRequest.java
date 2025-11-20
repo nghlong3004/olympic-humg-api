@@ -4,6 +4,7 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import vn.edu.humg.olympic.exception.BadRequestException;
 import vn.edu.humg.olympic.model.User;
 import vn.edu.humg.olympic.model.UserGender;
 import vn.edu.humg.olympic.model.UserRole;
@@ -39,7 +40,7 @@ public record RegisterRequest(
     public static User from(RegisterRequest request,
                             String passwordHash) {
         if (request == null) {
-            return null;
+            throw new BadRequestException("Request register must not be null");
         }
         return User.builder()
                    .firstName(request.firstName())
