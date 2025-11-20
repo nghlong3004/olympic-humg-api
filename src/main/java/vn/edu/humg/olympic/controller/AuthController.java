@@ -1,6 +1,9 @@
 package vn.edu.humg.olympic.controller;
 
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -42,6 +45,22 @@ public class AuthController {
         session.setAttribute(ApplicationConstant.SESSION_USER_ROLE, response.role());
 
         return response;
+    }
+
+    @PostMapping("/logout")
+    @ResponseStatus(HttpStatus.OK)
+    public void logout(HttpServletRequest request,
+                       HttpServletResponse response) {
+        HttpSession session = request.getSession(false);
+        
+        session.invalidate();
+
+        Cookie cookie = new Cookie("JSESSIONID", null);
+        cookie.setPath("/");
+        cookie.setHttpOnly(true);
+        cookie.setSecure(false);
+        cookie.setMaxAge(0);
+        response.addCookie(cookie);
     }
 }
 
