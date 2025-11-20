@@ -5,6 +5,7 @@ import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.FieldError;
+import org.springframework.web.HttpMediaTypeNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -48,7 +49,7 @@ public class GlobalExceptionHandler {
                                                  (msg1, msg2) -> msg1));
 
         return new ErrorResponse(Timestamp.valueOf(LocalDateTime.now()), HttpStatus.BAD_REQUEST.value(),
-                                 "Method Argument Not Validation", details);
+                                 "Validation failed", details);
     }
 
     @ExceptionHandler(ConstraintViolationException.class)
@@ -63,21 +64,28 @@ public class GlobalExceptionHandler {
                        }, ConstraintViolation::getMessage, (msg1, msg2) -> msg1));
 
         return new ErrorResponse(Timestamp.valueOf(LocalDateTime.now()), HttpStatus.BAD_REQUEST.value(),
-                                 "Constraint Violation", details);
+                                 "Validation failed", details);
     }
 
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse handleTypeMismatch(MethodArgumentTypeMismatchException e) {
         return new ErrorResponse(Timestamp.valueOf(LocalDateTime.now()), HttpStatus.BAD_REQUEST.value(),
-                                 "Method Argument Type Mismatch: %s".formatted(e.getName()), null);
+                                 "Invalid value for parameter: %s".formatted(e.getName()), null);
     }
 
     @ExceptionHandler(AccessDeniedException.class)
     @ResponseStatus(HttpStatus.FORBIDDEN)
     public ErrorResponse handleAccessDenied(AccessDeniedException e) {
-        log.info("Access denied: {}", e.getMessage());
+        log.warn("Access denied: {}", e.getMessage());
         return new ErrorResponse(Timestamp.valueOf(LocalDateTime.now()), HttpStatus.FORBIDDEN.value(), "Access denied",
+                                 null);
+    }
+
+    @ExceptionHandler(HttpMediaTypeNotSupportedException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handleHttpMediaTypeNotSupportedException(HttpMediaTypeNotSupportedException e) {
+        return new ErrorResponse(Timestamp.valueOf(LocalDateTime.now()), HttpStatus.FORBIDDEN.value(), e.getMessage(),
                                  null);
     }
 
@@ -87,6 +95,6 @@ public class GlobalExceptionHandler {
         log.error("Internal Server Error: ", e);
 
         return new ErrorResponse(Timestamp.valueOf(LocalDateTime.now()), HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                                 "Internal Server Error", null);
+                                 "An unexpected error occurred", null);
     }
 }
