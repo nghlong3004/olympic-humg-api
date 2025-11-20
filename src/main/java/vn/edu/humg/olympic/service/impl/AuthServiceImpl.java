@@ -1,8 +1,6 @@
 package vn.edu.humg.olympic.service.impl;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import vn.edu.humg.olympic.exception.BadRequestException;
@@ -50,14 +48,14 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public LoginResponse login(LoginRequest request) {
         User user = userRepository.findByEmail(request.email())
-                                  .orElseThrow(() -> new BadCredentialsException("Bad credentials"));
+                                  .orElseThrow(() -> new BadRequestException("Bad credentials"));
 
         if (!passwordEncoder.matches(request.password(), user.getPasswordHash())) {
-            throw new BadCredentialsException("Bad credentials");
+            throw new BadRequestException("Bad credentials");
         }
 
         if (Boolean.FALSE.equals(user.getIsActive())) {
-            throw new DisabledException("User account is disabled");
+            throw new BadRequestException("User account is disabled");
         }
 
         return LoginResponse.from(user);

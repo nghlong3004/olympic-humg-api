@@ -85,7 +85,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(HttpMediaTypeNotSupportedException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse handleHttpMediaTypeNotSupportedException(HttpMediaTypeNotSupportedException e) {
-        return new ErrorResponse(Timestamp.valueOf(LocalDateTime.now()), HttpStatus.FORBIDDEN.value(), e.getMessage(),
+        return new ErrorResponse(Timestamp.valueOf(LocalDateTime.now()), HttpStatus.BAD_REQUEST.value(), e.getMessage(),
                                  null);
     }
 
