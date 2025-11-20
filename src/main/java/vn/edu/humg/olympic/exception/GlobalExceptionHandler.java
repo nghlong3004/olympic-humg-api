@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 import vn.edu.humg.olympic.model.response.ErrorResponse;
 
 import java.nio.file.AccessDeniedException;
@@ -28,6 +29,13 @@ public class GlobalExceptionHandler {
     public ErrorResponse handleBadRequest(BadRequestException e) {
         return new ErrorResponse(Timestamp.valueOf(LocalDateTime.now()), HttpStatus.BAD_REQUEST.value(), e.getMessage(),
                                  null);
+    }
+
+    @ExceptionHandler(UnauthorizedRequestException.class)
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    public ErrorResponse handleBadRequest(UnauthorizedRequestException e) {
+        return new ErrorResponse(Timestamp.valueOf(LocalDateTime.now()), HttpStatus.UNAUTHORIZED.value(),
+                                 e.getMessage(), null);
     }
 
     @ExceptionHandler(ResourceNotFoundException.class)
@@ -86,6 +94,13 @@ public class GlobalExceptionHandler {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse handleHttpMediaTypeNotSupportedException(HttpMediaTypeNotSupportedException e) {
         return new ErrorResponse(Timestamp.valueOf(LocalDateTime.now()), HttpStatus.BAD_REQUEST.value(), e.getMessage(),
+                                 null);
+    }
+
+    @ExceptionHandler(NoResourceFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ErrorResponse handleNoResourceFoundException(NoResourceFoundException e) {
+        return new ErrorResponse(Timestamp.valueOf(LocalDateTime.now()), HttpStatus.NOT_FOUND.value(), "Not Found",
                                  null);
     }
 
