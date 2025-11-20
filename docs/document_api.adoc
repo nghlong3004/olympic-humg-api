@@ -13,7 +13,7 @@ Module `Document` chịu trách nhiệm:
 
 === DocumentResponse Data Type
 
-Dùng chung cho các API trả về thông tin tài liệu.
+Các field có giá trị `null` sẽ bị ẩn khỏi JSON.
 
 [cols="2,2,6",options="header"]
 |===
@@ -22,14 +22,14 @@ Dùng chung cho các API trả về thông tin tài liệu.
 | Ghi chú
 
 | `id`           | number   | ID tài liệu
-| `title`        | string   | Tiêu đề tài liệu (<= 55 ký tự)
-| `description`  | string   | Mô tả ngắn (<= 155 ký tự), có thể null
+| `title`        | string   | Tiêu đề tài liệu
+| `description`  | string   | Mô tả ngắn (Ẩn nếu null)
 | `fileUrl`      | string   | URL truy cập file
-| `fileType`     | string   | Loại file, ví dụ: `pdf`, `pptx`, `docx`, `jpg`...
+| `fileType`     | string   | Loại file (`pdf`, `docx`...)
 | `fileSize`     | number   | Kích thước file (bytes)
-| `subjectName`  | string   | Tên môn/chủ đề (<= 30 ký tự), có thể null
+| `subjectName`  | string   | Tên môn/chủ đề (Ẩn nếu null)
 | `accessType`   | enum     | `PUBLIC` hoặc `PRIVATE`
-| `ownerId`      | number   | ID người sở hữu (giảng viên/admin upload)
+| `ownerId`      | number   | ID người upload
 | `created`      | datetime | Thời điểm tạo
 | `updated`      | datetime | Thời điểm cập nhật gần nhất
 |===
@@ -64,35 +64,13 @@ _Body_
 
 [cols="2,2,3,5",options="header"]
 |===
-| Trường
-| Kiểu
-| Bắt buộc
-| Ghi chú
+| Trường        | Kiểu            | Bắt buộc | Ghi chú
 
-| `file`
-| file
-| yes
-| File tài liệu (PDF, PPTX, DOCX, hình ảnh,...)
-
-| `title`
-| string (1..50)
-| yes
-| Tiêu đề tài liệu
-
-| `description`
-| string (<= 155)
-| no
-| Mô tả ngắn cho tài liệu
-
-| `subjectName`
-| string (<= 30)
-| no
-| Tên môn/chủ đề, ví dụ: `"Math"`, `"Physics"`
-
-| `accessType`
-| enum
-| no
-| `PUBLIC` hoặc `PRIVATE`. Mặc định: `PUBLIC`.
+| `file`        | file            | yes      | File tài liệu
+| `title`       | string (1..50)  | yes      | Tiêu đề tài liệu
+| `description` | string (<= 155) | no       | Mô tả ngắn
+| `subjectName` | string (<= 30)  | no       | Tên môn/chủ đề
+| `accessType`  | enum            | no       | `PUBLIC` (default) / `PRIVATE`
 |===
 
 *Response*
@@ -123,7 +101,7 @@ _400 Bad Request_
 {
   "timestamp": "2025-02-10T12:30:00",
   "status": 400,
-  "message": "Dữ liệu không hợp lệ",
+  "message": "Validation failed",
   "details": {
     "title": "must not be blank",
     "file": "is required"
@@ -131,15 +109,14 @@ _400 Bad Request_
 }
 ----
 
-_403 FORBIDDEN_
+_403 Forbidden_
 
 [source,json]
 ----
 {
   "timestamp": "2025-02-10T12:30:00",
   "status": 403,
-  "message": "Access denied",
-  "details": null
+  "message": "Access denied"
 }
 ----
 
@@ -166,21 +143,20 @@ _Query params_
 |===
 | Tham số     | Kiểu   | Bắt buộc | Ghi chú
 
-| `page`      | number | no       | Số trang, bắt đầu từ 0. Mặc định = 0.
-| `size`      | number | no       | Số phần tử mỗi trang. Mặc định = 20.
-| `subject`   | string | no       | Filter theo `subjectName`.
-| `keyword`   | string | no       | Tìm kiếm trong `title` và `description`.
-| `ownerId`   | number | no       | Filter theo người sở hữu tài liệu (ví dụ: "tài liệu của tôi" đối với giảng viên).
-| `accessType`| enum   | no       | `PUBLIC` hoặc `PRIVATE`. Thường chỉ admin/owner mới thấy PRIVATE.
+| `page`      | number | no       | Mặc định = 0
+| `size`      | number | no       | Mặc định = 20
+| `subject`   | string | no       | Filter theo `subjectName`
+| `keyword`   | string | no       | Tìm kiếm trong `title`, `description`
+| `ownerId`   | number | no       | Filter theo người sở hữu
+| `accessType`| enum   | no       | `PUBLIC` / `PRIVATE`
 |===
 
-_Ví dụ_
+_Example_
 
 [source]
 ----
 GET /api/document?page=0&size=10
-GET /api/document?subject=Math&keyword=on%20tap&page=0&size=5
-GET /api/document?ownerId=42&page=0&size=20
+GET /api/document?subject=Math&keyword=on%20tap
 ----
 
 *Response*
@@ -194,7 +170,7 @@ _200 OK_
     {
       "id": 10,
       "title": "Tài liệu ôn tập Toán 1",
-      "description": "Tổng hợp công thức và bài tập chương 1",
+      "description": "Tổng hợp công thức",
       "fileUrl": "https://cdn.example.com/documents/10.pdf",
       "fileType": "pdf",
       "fileSize": 123456,
@@ -203,11 +179,23 @@ _200 OK_
       "ownerId": 42,
       "created": "2025-02-10T12:30:00",
       "updated": "2025-02-10T12:30:00"
+    },
+    {
+      "id": 11,
+      "title": "Slide bài giảng buổi 2",
+      "fileUrl": "https://cdn.example.com/documents/11.pptx",
+      "fileType": "pptx",
+      "fileSize": 500000,
+      "subjectName": "Math",
+      "accessType": "PUBLIC",
+      "ownerId": 42,
+      "created": "2025-02-11T08:00:00",
+      "updated": "2025-02-11T08:00:00"
     }
   ],
   "page": 0,
   "size": 10,
-  "totalElements": 1,
+  "totalElements": 2,
   "totalPages": 1
 }
 ----
@@ -219,8 +207,7 @@ _401 Unauthorized_
 {
   "timestamp": "2025-02-10T12:35:00",
   "status": 401,
-  "message": "Not authenticated",
-  "details": null
+  "message": "Not authenticated"
 }
 ----
 
@@ -267,20 +254,18 @@ _404 Not Found_
 {
   "timestamp": "2025-02-10T12:40:00",
   "status": 404,
-  "message": "Document not found",
-  "details": null
+  "message": "Document not found"
 }
 ----
 
-_403 FORBIDDEN_
+_403 Forbidden_
 
 [source,json]
 ----
 {
   "timestamp": "2025-02-10T12:40:00",
   "status": 403,
-  "message": "Access denied",
-  "details": null
+  "message": "Access denied"
 }
 ----
 
@@ -290,8 +275,8 @@ _403 FORBIDDEN_
 
 ==== PATCH /document/{documentId}
 
-Cho phép cập nhật metadata của tài liệu (không upload lại file).
-Chỉ `owner` (giảng viên tạo tài liệu) hoặc `ADMIN` được phép sửa.
+Allows updating document metadata (without re-uploading the file).
+Only the owner (creator) or ADMIN is allowed to edit.
 
 *Request*
 
@@ -308,7 +293,7 @@ Content-Type: application/json
 Cookie: JSESSIONID=abc123xyz;
 ----
 
-_Body_ (tất cả field đều optional)
+_Body_
 
 [source,json]
 ----
@@ -324,12 +309,12 @@ _Các trường được phép cập nhật:_
 
 [cols="2,2,3,5",options="header"]
 |===
-| Trường       | Kiểu   | Bắt buộc | Ghi chú
+| Trường       | Kiểu            | Bắt buộc | Ghi chú
 
-| `title`      | string (1..55)   | no | Tiêu đề mới
-| `description`| string (<= 155)  | no | Mô tả mới
-| `subjectName`| string (<= 30)   | no | Môn/chủ đề
-| `accessType` | enum             | no | `PUBLIC` / `PRIVATE`
+| `title`      | string (1..55)  | no       | Tiêu đề mới
+| `description`| string (<= 155) | no       | Mô tả mới
+| `subjectName`| string (<= 30)  | no       | Môn/chủ đề
+| `accessType` | enum            | no       | `PUBLIC` / `PRIVATE`
 |===
 
 *Response*
@@ -363,22 +348,21 @@ _400 Bad Request_
 {
   "timestamp": "2025-02-11T09:00:00",
   "status": 400,
-  "message": "Invalid input",
+  "message": "Validation failed",
   "details": {
     "title": "size must be between 1 and 55"
   }
 }
 ----
 
-_403 FORBIDDEN_
+_403 Forbidden_
 
 [source,json]
 ----
 {
   "timestamp": "2025-02-11T09:00:00",
   "status": 403,
-  "message": "Access denied",
-  "details": null
+  "message": "Access denied"
 }
 ----
 
@@ -416,19 +400,17 @@ _404 Not Found_
 {
   "timestamp": "2025-02-11T10:00:00",
   "status": 404,
-  "message": "Document not found",
-  "details": null
+  "message": "Document not found"
 }
 ----
 
-_403 FORBIDDEN_
+_403 Forbidden_
 
 [source,json]
 ----
 {
   "timestamp": "2025-02-11T10:00:00",
   "status": 403,
-  "message": "Access denied",
-  "details": null
+  "message": "Access denied"
 }
 ----

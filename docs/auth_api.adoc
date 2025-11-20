@@ -6,9 +6,9 @@
 
 Module `Auth` chịu trách nhiệm:
 
-* Register.
-* Login.
-* Logout.
+* Register (Đăng ký).
+* Login (Đăng nhập).
+* Logout (Đăng xuất).
 
 '''
 
@@ -55,60 +55,40 @@ _Data Constraints_
 
 [cols="2,2,3,5",options="header"]
 |===
-| Trường
-| Kiểu
-| Bắt buộc
-| Ghi chú
+| Trường          | Kiểu            | Bắt buộc | Ghi chú
 
-| `firstName`
-| string (1..25)
-| yes
-| Tên, không rỗng
-
-| `lastName`
-| string (1..25)
-| yes
-| Họ, không rỗng
-
-| `email`
-| email
-| yes
-| Duy nhất trong hệ thống
-
-| `password`
-| string (>= 6)
-| yes
-| Mật khẩu
-
-| `gender`
-| enum
-| yes
-| Một trong: `MALE`, `FEMALE`, `OTHER`
-
-| `birthday`
-| date
-| yes
-| Ngày sinh (YYYY-MM-DD)
-
-| `phone`
-| string
-| no
-| Số điện thoại, có thể để trống
-
-| `universityName`
-| string (<= 50)
-| no
-| Tên trường, có thể để trống
-
-| `facultyName`
-| string (<= 50)
-| no
-| Tên khoa, có thể để trống
+| `firstName`     | string (1..25)  | yes      | Tên, không rỗng
+| `lastName`      | string (1..25)  | yes      | Họ, không rỗng
+| `email`         | email           | yes      | Duy nhất trong hệ thống
+| `password`      | string (>= 6)   | yes      | Mật khẩu
+| `gender`        | enum            | yes      | `MALE`, `FEMALE`, `OTHER`
+| `birthday`      | date            | yes      | Format `YYYY-MM-DD`
+| `phone`         | string          | no       | Số điện thoại
+| `universityName`| string (<= 50)  | no       | Tên trường
+| `facultyName`   | string (<= 50)  | no       | Tên khoa
 |===
 
 *Response*
 
 _201 Created_
+
+[source,json]
+----
+{
+  "message": "Register success",
+  "user": {
+    "id": 42,
+    "firstName": "Long",
+    "lastName": "Nguyen",
+    "email": "long@example.com",
+    "gender": "MALE",
+    "birthday": "2004-03-30",
+    "universityName": "HUMG",
+    "facultyName": "Control Engineering",
+    "phone": "0987123456"
+  }
+}
+----
 
 _400 Bad Request_
 
@@ -117,7 +97,7 @@ _400 Bad Request_
 {
   "timestamp": "2025-02-10T10:00:00",
   "status": 400,
-  "message": "Method Argument Type Mismatch",
+  "message": "Validation failed",
   "details": {
     "email": "must be a valid email address",
     "password": "must be at least 6 characters"
@@ -132,8 +112,7 @@ _400 Bad Request_
 {
   "timestamp": "2025-02-10T10:05:00",
   "status": 400,
-  "message": "Email already exists",
-  "details": null
+  "message": "Email already exists"
 }
 ----
 
@@ -189,8 +168,7 @@ _200 OK_
     "role": "STUDENT",
     "universityName": "HUMG",
     "facultyName": "Control Engineering",
-    "phone": "0987123456",
-    "avatarUrl": "https://cdn.example.com/avatar/default.png"
+    "phone": "0987123456"
   }
 }
 ----
@@ -209,8 +187,7 @@ _401 Unauthorized_
 {
   "timestamp": "2025-02-10T10:10:00",
   "status": 401,
-  "message": "Method Argument Not Validation",
-  "details": null
+  "message": "Bad credentials"
 }
 ----
 
@@ -254,7 +231,6 @@ _401 Unauthorized_
 {
   "timestamp": "2025-02-10T10:15:00",
   "status": 401,
-  "message": "Chưa đăng nhập",
-  "details": null
+  "message": "Not authenticated"
 }
 ----

@@ -1,27 +1,29 @@
 = API Documentation
 :doctype: book
 :toc:
+:sectnums:
 :toclevels: 2
 
+'''
+
 == General Format
+
+'''
 
 === Base URL
 
 [source]
 ----
-/api
+/api/v1
 ----
 
-Ví dụ đầy đủ cho môi trường dev:
-
-[source]
-----
-http://localhost:8080/api
-----
+'''
 
 === Character Encoding
 
-* Tất cả request/response dùng `UTF-8`.
+* All request/response use `UTF-8`.
+
+'''
 
 === Common Data Types
 
@@ -43,7 +45,7 @@ http://localhost:8080/api
 | `"2004-03-30"`
 | ISO-8601, `YYYY-MM-DD`
 
-| `datetime`
+| `timestamp`
 | `"2025-02-10T12:30:00"`
 | ISO-8601, `YYYY-MM-DDThh:mm:ss`
 
@@ -52,7 +54,11 @@ http://localhost:8080/api
 | Một trong những giá trị cho phép
 |===
 
+'''
+
 === ErrorResponse Data Type
+
+Các field có giá trị `null` sẽ bị ẩn khỏi JSON.
 
 [cols="2,2,6",options="header"]
 |===
@@ -74,16 +80,6 @@ http://localhost:8080/api
 | map<string, string>
 | Dùng khi lỗi Validation (400). Key là tên field, Value là nội dung lỗi.
 |===
-
-=== Authorization & Roles
-
-* Cơ chế auth: `session-cookie` với cookie `JSESSIONID`.
-* Các role chính:
-** `STUDENT`
-** `TEACHER`
-** `ADMIN`
-* Tất cả endpoint (trừ Auth) yêu cầu cookie `JSESSIONID` hợp lệ.
-
 
 include::auth_api.adoc[Auth API]
 

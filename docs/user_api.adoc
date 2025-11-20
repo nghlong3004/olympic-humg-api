@@ -15,25 +15,25 @@ Module `User` chịu trách nhiệm:
 
 === UserResponse Data Type
 
+Các field có giá trị `null` sẽ bị ẩn khỏi JSON.
+
 [cols="2,2,6",options="header"]
 |===
-| Trường
-| Kiểu
-| Ghi chú
+| Trường         | Kiểu     | Ghi chú
 
-| `id` | number | ID user
-| `firstName` | string | Tên
-| `lastName` | string | Họ
-| `email` | email | Email duy nhất
-| `gender` | enum | `MALE`, `FEMALE`, `OTHER`
-| `birthday` | date | Ngày sinh
-| `role` | enum | `STUDENT`, `TEACHER`, `ADMIN`
-| `phone` | string | SĐT, có thể null
-| `universityName` | string | Tên trường
-| `facultyName` | string | Tên khoa
-| `avatarUrl` | string | Link avatar
-| `created` | datetime | Thời điểm tạo
-| `updated` | datetime | Thời điểm cập nhật
+| `id`           | number   | ID user
+| `firstName`    | string   | Tên
+| `lastName`     | string   | Họ
+| `email`        | email    | Email
+| `gender`       | enum     | `MALE`, `FEMALE`, `OTHER`
+| `birthday`     | date     | Ngày sinh
+| `role`         | enum     | `STUDENT`, `TEACHER`, `ADMIN`
+| `phone`        | string   | SĐT (Ẩn nếu null)
+| `universityName`| string  | Tên trường (Ẩn nếu null)
+| `facultyName`  | string   | Tên khoa (Ẩn nếu null)
+| `avatarUrl`    | string   | Link avatar (Ẩn nếu null)
+| `created`      | datetime | Thời điểm tạo
+| `updated`      | datetime | Thời điểm cập nhật
 |===
 
 '''
@@ -88,8 +88,7 @@ _401 Unauthorized_
 {
   "timestamp": "2025-02-10T12:30:00",
   "status": 401,
-  "message": "Not authenticated",
-  "details": null
+  "message": "Not authenticated"
 }
 ----
 
@@ -100,6 +99,7 @@ _401 Unauthorized_
 ==== PATCH /user/me
 
 Cập nhật profile của user đang đăng nhập.
+Không cho phép cập nhật: `email`, `role`, `isActive` qua API này.
 
 *Request*
 
@@ -130,11 +130,19 @@ _Body_
 }
 ----
 
-Không cho phép cập nhật qua API này:
+_Các trường được phép cập nhật:_
 
-* email
-* role
-* is_active
+[cols="2,2,3,5",options="header"]
+|===
+| Trường          | Kiểu   | Bắt buộc | Ghi chú
+
+| `firstName`     | string | no       | Tên
+| `lastName`      | string | no       | Họ
+| `phone`         | string | no       | Số điện thoại
+| `universityName`| string | no       | Tên trường
+| `facultyName`   | string | no       | Tên khoa
+| `avatarUrl`     | string | no       | Link ảnh đại diện
+|===
 
 *Response*
 
@@ -169,7 +177,7 @@ _400 Bad Request_
 {
   "timestamp": "2025-02-11T09:00:00",
   "status": 400,
-  "message": "Invalid input",
+  "message": "Validation failed",
   "details": {
     "firstName": "must not be blank",
     "phone": "invalid phone number format"
@@ -184,8 +192,7 @@ _401 Unauthorized_
 {
   "timestamp": "2025-02-11T09:00:00",
   "status": 401,
-  "message": "Not authenticated",
-  "details": null
+  "message": "Not authenticated"
 }
 ----
 
@@ -195,7 +202,7 @@ _401 Unauthorized_
 
 ==== GET /user/{userId}
 
-Lấy thông tin một user khác.
+Lấy thông tin một user khác (Public profile).
 
 *Request*
 
@@ -234,20 +241,18 @@ _404 Not Found_
 {
   "timestamp": "2025-02-10T12:30:00",
   "status": 404,
-  "message": "User not found",
-  "details": null
+  "message": "User not found"
 }
 ----
 
-_403 FORBIDDEN_
+_403 Forbidden_
 
 [source,json]
 ----
 {
   "timestamp": "2025-02-10T12:30:00",
   "status": 403,
-  "message": "Access denied",
-  "details": null
+  "message": "Access denied"
 }
 ----
 
@@ -270,12 +275,12 @@ _Query params_
 
 [cols="2,2,3,5",options="header"]
 |===
-| Tham số | Kiểu | Bắt buộc | Ghi chú
+| Tham số | Kiểu   | Bắt buộc | Ghi chú
 
-| `keyword` | string | no | Chuỗi để tìm kiếm theo tên
-| `page` | number | no | Mặc định = 0
-| `size` | number | no | Mặc định = 20
-| `role` | enum | no | Filter theo role
+| `keyword` | string | no       | Chuỗi tìm kiếm theo tên
+| `page`    | number | no       | Mặc định = 0
+| `size`    | number | no       | Mặc định = 20
+| `role`    | enum   | no       | Filter theo role
 |===
 
 *Response*
@@ -309,14 +314,13 @@ _200 OK_
 }
 ----
 
-_403 FORBIDDEN_
+_403 Forbidden_
 
 [source,json]
 ----
 {
   "timestamp": "2025-02-10T12:35:00",
   "status": 403,
-  "message": "Access denied",
-  "details": null
+  "message": "Access denied"
 }
 ----

@@ -10,13 +10,13 @@ Module `Question` chịu trách nhiệm:
 * Hỗ trợ 2 loại câu hỏi:
 ** `MULTIPLE_CHOICE` – trắc nghiệm nhiều lựa chọn.
 ** `SHORT_ANSWER` – trả lời ngắn.
-* Quản lý các option của câu hỏi trắc nghiệm (bảng `question_option`).
+* Quản lý các option của câu hỏi trắc nghiệm.
 
 '''
 
 === QuestionOptionResponse Data Type
 
-Đại diện một lựa chọn (option) của câu hỏi trắc nghiệm.
+Một option của câu hỏi trắc nghiệm.
 
 [cols="2,2,6",options="header"]
 |===
@@ -31,7 +31,7 @@ Module `Question` chịu trách nhiệm:
 
 === QuestionResponse Data Type
 
-Dùng cho các API trả về thông tin câu hỏi.
+Các field có giá trị `null` sẽ bị ẩn khỏi JSON.
 
 [cols="2,2,6",options="header"]
 |===
@@ -41,9 +41,9 @@ Dùng cho các API trả về thông tin câu hỏi.
 | `assignmentId`  | number           | ID assignment chứa câu hỏi này
 | `type`          | enum             | `MULTIPLE_CHOICE` hoặc `SHORT_ANSWER`
 | `content`       | string           | Nội dung câu hỏi
-| `correctAnswer` | string           | Đáp án đúng (text). Với `MULTIPLE_CHOICE` thường là `"A"`, `"B"`,... hoặc `"A;C"`. (Nên ẩn nếu user là STUDENT đang làm bài).
-| `score`         | number           | Số điểm cho câu hỏi, mặc định = 1
-| `options`       | array<QuestionOptionResponse> | Danh sách lựa chọn (chỉ cho `MULTIPLE_CHOICE`)
+| `correctAnswer` | string           | Đáp án đúng. (Ẩn nếu user là STUDENT hoặc chưa có đáp án)
+| `score`         | number           | Số điểm cho câu hỏi
+| `options`       | array            | Danh sách `QuestionOptionResponse`. (Ẩn nếu `type` là `SHORT_ANSWER`)
 | `isActive`      | boolean          | `true` nếu câu hỏi còn hiệu lực
 | `created`       | datetime         | Thời điểm tạo
 | `updated`       | datetime         | Thời điểm cập nhật gần nhất
@@ -98,6 +98,17 @@ _200 OK_
     "isActive": true,
     "created": "2025-02-10T12:30:00",
     "updated": "2025-02-10T12:30:00"
+  },
+  {
+    "id": 102,
+    "assignmentId": 5,
+    "type": "SHORT_ANSWER",
+    "content": "Tính giới hạn lim (x→0) sin x / x.",
+    "correctAnswer": "1",
+    "score": 2,
+    "isActive": true,
+    "created": "2025-02-10T12:35:00",
+    "updated": "2025-02-10T12:35:00"
   }
 ]
 ----
@@ -109,20 +120,18 @@ _404 Not Found_
 {
   "timestamp": "2025-02-10T12:35:00",
   "status": 404,
-  "message": "Assignment not found",
-  "details": null
+  "message": "Assignment not found"
 }
 ----
 
-_403 FORBIDDEN_
+_403 Forbidden_
 
 [source,json]
 ----
 {
   "timestamp": "2025-02-10T12:35:00",
   "status": 403,
-  "message": "Access denied",
-  "details": null
+  "message": "Access denied"
 }
 ----
 
@@ -173,8 +182,7 @@ _404 Not Found_
 {
   "timestamp": "2025-02-10T12:40:00",
   "status": 404,
-  "message": "Question not found",
-  "details": null
+  "message": "Question not found"
 }
 ----
 
@@ -185,8 +193,7 @@ _401 Unauthorized_
 {
   "timestamp": "2025-02-10T12:40:00",
   "status": 401,
-  "message": "Access denied",
-  "details": null
+  "message": "Not authenticated"
 }
 ----
 
@@ -215,7 +222,7 @@ Content-Type: application/json
 Cookie: JSESSIONID=abc123xyz;
 ----
 
-_Body_
+_Body (MULTIPLE_CHOICE)_
 
 [source,json]
 ----
@@ -253,11 +260,11 @@ _Data Constraints_
 
 | `type`          | enum            | yes      | `MULTIPLE_CHOICE` / `SHORT_ANSWER`
 | `content`       | string          | yes      | Nội dung câu hỏi
-| `correctAnswer` | string          | no       | Có thể `null` nếu chấm tay, nhưng khuyến khích có để chấm tự động
+| `correctAnswer` | string          | no       | Có thể `null` nếu chấm tay
 | `score`         | number          | no       | Mặc định = 1
 | `options`       | array<object>   | no       | Bắt buộc nếu `type = MULTIPLE_CHOICE`
-| `options[].optionKey` | string    | yes* | Bắt buộc với `MULTIPLE_CHOICE`, ví dụ `"A"`, `"B"`
-| `options[].content`   | string    | yes* | Nội dung lựa chọn
+| `options[].optionKey` | string    | yes | Ví dụ `"A"`, `"B"`
+| `options[].content`   | string    | yes | Nội dung lựa chọn
 |===
 
 *Response*
@@ -292,7 +299,7 @@ _400 Bad Request_
 {
   "timestamp": "2025-02-10T12:31:00",
   "status": 400,
-  "message": "Dữ liệu không hợp lệ",
+  "message": "Validation failed",
   "details": {
     "content": "must not be blank",
     "options": "must not be empty for MULTIPLE_CHOICE"
@@ -307,20 +314,18 @@ _404 Not Found_
 {
   "timestamp": "2025-02-10T12:31:00",
   "status": 404,
-  "message": "Assignment not found",
-  "details": null
+  "message": "Assignment not found"
 }
 ----
 
-_403 FORBIDDEN_
+_403 Forbidden_
 
 [source,json]
 ----
 {
   "timestamp": "2025-02-10T12:31:00",
   "status": 403,
-  "message": "Access denied",
-  "details": null
+  "message": "Access denied"
 }
 ----
 
@@ -398,7 +403,7 @@ _400 Bad Request_
 {
   "timestamp": "2025-02-11T09:01:00",
   "status": 400,
-  "message": "Invalid input",
+  "message": "Validation failed",
   "details": {
     "score": "must be greater than 0"
   }
@@ -412,20 +417,18 @@ _404 Not Found_
 {
   "timestamp": "2025-02-11T09:01:00",
   "status": 404,
-  "message": "Question not found",
-  "details": null
+  "message": "Question not found"
 }
 ----
 
-_403 FORBIDDEN_
+_403 Forbidden_
 
 [source,json]
 ----
 {
   "timestamp": "2025-02-11T09:01:00",
   "status": 403,
-  "message": "Access denied",
-  "details": null
+  "message": "Access denied"
 }
 ----
 
@@ -462,19 +465,17 @@ _404 Not Found_
 {
   "timestamp": "2025-02-11T10:00:00",
   "status": 404,
-  "message": "Question not found",
-  "details": null
+  "message": "Question not found"
 }
 ----
 
-_403 FORBIDDEN_
+_403 Forbidden_
 
 [source,json]
 ----
 {
   "timestamp": "2025-02-11T10:00:00",
   "status": 403,
-  "message": "Access denied",
-  "details": null
+  "message": "Access denied"
 }
 ----

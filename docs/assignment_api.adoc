@@ -15,19 +15,19 @@ Module `Assignment` chịu trách nhiệm:
 
 === AssignmentResponse Data Type
 
-Dùng cho các API trả về thông tin bài tập.
+Các field có giá trị `null` sẽ bị ẩn khỏi JSON.
 
 [cols="2,2,6",options="header"]
 |===
 | Trường         | Kiểu     | Ghi chú
 
 | `id`           | number   | ID assignment
-| `title`        | string   | Tiêu đề (<= 55 ký tự)
-| `description`  | string   | Mô tả ngắn (<= 155 ký tự), có thể null
-| `subjectName`  | string   | Tên môn/chủ đề (<= 30 ký tự), có thể null
+| `title`        | string   | Tiêu đề
+| `description`  | string   | Mô tả ngắn (Ẩn nếu null)
+| `subjectName`  | string   | Tên môn/chủ đề (Ẩn nếu null)
 | `ownerId`      | number   | ID giảng viên tạo assignment
-| `startTime`    | datetime | Thời gian mở (có thể null)
-| `endTime`      | datetime | Hạn nộp (có thể null)
+| `startTime`    | datetime | Thời gian mở (Ẩn nếu null)
+| `endTime`      | datetime | Hạn nộp (Ẩn nếu null)
 | `isActive`     | boolean  | `true` nếu assignment còn hiệu lực
 | `created`      | datetime | Thời điểm tạo
 | `updated`      | datetime | Thời điểm cập nhật gần nhất
@@ -79,9 +79,9 @@ _Data Constraints_
 
 | `title`       | string (1..55)  | yes      | Tiêu đề assignment
 | `description` | string (<= 155) | no       | Mô tả ngắn
-| `subjectName` | string (<= 30)  | no       | Tên môn/chủ đề, ví dụ: `"Math"`, `"Physics"`
-| `startTime`   | datetime        | no       | Thời điểm bắt đầu, format `YYYY-MM-DDThh:mm:ss`
-| `endTime`     | datetime        | no       | Hạn nộp, format `YYYY-MM-DDThh:mm:ss`
+| `subjectName` | string (<= 30)  | no       | Tên môn/chủ đề
+| `startTime`   | datetime        | no       | Thời điểm bắt đầu
+| `endTime`     | datetime        | no       | Hạn nộp
 |===
 
 *Response*
@@ -111,7 +111,7 @@ _400 Bad Request_
 {
   "timestamp": "2025-02-10T12:31:00",
   "status": 400,
-  "message": "Dữ liệu đầu vào không hợp lệ",
+  "message": "Validation failed",
   "details": {
     "title": "must not be blank",
     "startTime": "must be a valid date"
@@ -126,8 +126,7 @@ _403 Forbidden_
 {
   "timestamp": "2025-02-10T12:31:00",
   "status": 403,
-  "message": "Access denied",
-  "details": null
+  "message": "Access denied"
 }
 ----
 
@@ -163,7 +162,7 @@ _Query params_
 | `toEnd`      | datetime | no       | Lọc assignment có `endTime <= toEnd`
 |===
 
-_Ví dụ_
+_Example_
 
 [source]
 ----
@@ -183,12 +182,11 @@ _200 OK_
   "content": [
     {
       "id": 5,
-      "title": "Bài tập chương 1 - Giới hạn",
-      "description": "Làm các bài tập từ 1 đến 10 trong slide chương 1",
+      "title": "Kiểm tra 15 phút",
       "subjectName": "Math",
       "ownerId": 42,
       "startTime": "2025-03-01T08:00:00",
-      "endTime": "2025-03-07T23:59:59",
+      "endTime": "2025-03-01T08:15:00",
       "isActive": true,
       "created": "2025-02-10T12:30:00",
       "updated": "2025-02-10T12:30:00"
@@ -208,8 +206,7 @@ _401 Unauthorized_
 {
   "timestamp": "2025-02-10T12:35:00",
   "status": 401,
-  "message": "Not authenticated",
-  "details": null
+  "message": "Not authenticated"
 }
 ----
 
@@ -255,8 +252,7 @@ _404 Not Found_
 {
   "timestamp": "2025-02-10T12:40:00",
   "status": 404,
-  "message": "Assignment not found",
-  "details": null
+  "message": "Assignment not found"
 }
 ----
 
@@ -267,8 +263,7 @@ _403 Forbidden_
 {
   "timestamp": "2025-02-10T12:40:00",
   "status": 403,
-  "message": "Access denied",
-  "details": null
+  "message": "Access denied"
 }
 ----
 
@@ -333,7 +328,7 @@ _200 OK_
   "message": "Update success",
   "assignment": {
     "id": 5,
-    "title": "Bài tập chương 1 - Giới hạn (cập nhật)",
+    "title": "Bài tập chương 1 - Giới hạn",
     "description": "Thêm phần bài tập tự luận",
     "subjectName": "Math",
     "ownerId": 42,
@@ -353,7 +348,7 @@ _400 Bad Request_
 {
   "timestamp": "2025-02-11T09:01:00",
   "status": 400,
-  "message": "Dữ liệu không hợp lệ",
+  "message": "Validation failed",
   "details": {
     "startTime": "Start time must be before End time"
   }
@@ -367,8 +362,7 @@ _403 Forbidden_
 {
   "timestamp": "2025-02-11T09:01:00",
   "status": 403,
-  "message": "Access denied",
-  "details": null
+  "message": "Access denied"
 }
 ----
 
@@ -405,8 +399,7 @@ _404 Not Found_
 {
   "timestamp": "2025-02-11T10:00:00",
   "status": 404,
-  "message": "Assignment not found",
-  "details": null
+  "message": "Assignment not found"
 }
 ----
 
@@ -417,7 +410,6 @@ _403 Forbidden_
 {
   "timestamp": "2025-02-11T10:00:00",
   "status": 403,
-  "message": "Access denied",
-  "details": null
+  "message": "Access denied"
 }
 ----
