@@ -72,24 +72,6 @@ _Data Constraints_
 
 _201 Created_
 
-[source,json]
-----
-{
-  "message": "Register success",
-  "user": {
-    "id": 42,
-    "firstName": "Long",
-    "lastName": "Nguyen",
-    "email": "long@example.com",
-    "gender": "MALE",
-    "birthday": "2004-03-30",
-    "universityName": "HUMG",
-    "facultyName": "Control Engineering",
-    "phone": "0987123456"
-  }
-}
-----
-
 _400 Bad Request_
 
 [source,json]
@@ -157,8 +139,6 @@ _200 OK_
 [source,json]
 ----
 {
-  "message": "Login success",
-  "user": {
     "id": 42,
     "firstName": "Long",
     "lastName": "Nguyen",
@@ -169,7 +149,6 @@ _200 OK_
     "universityName": "HUMG",
     "facultyName": "Control Engineering",
     "phone": "0987123456"
-  }
 }
 ----
 
