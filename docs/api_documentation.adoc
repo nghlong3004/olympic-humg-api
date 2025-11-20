@@ -3,6 +3,7 @@
 :toc:
 :sectnums:
 :toclevels: 2
+:api-base: /api/v1
 
 '''
 
@@ -12,9 +13,9 @@
 
 === Base URL
 
-[source]
+[source,subs="attributes+"]
 ----
-/api/v1
+{api-base}
 ----
 
 '''
@@ -58,7 +59,16 @@
 
 === ErrorResponse Data Type
 
-Các field có giá trị `null` sẽ bị ẩn khỏi JSON.
+Tất cả lỗi trong hệ thống trả về theo cấu trúc JSON sau:
+
+[source,json]
+----
+{
+  "timestamp": "2025-02-10T10:05:00Z",
+  "status": 400,
+  "message": "Email is already registered."
+}
+----
 
 [cols="2,2,6",options="header"]
 |===
@@ -66,7 +76,7 @@ Các field có giá trị `null` sẽ bị ẩn khỏi JSON.
 
 | `timestamp`
 | datetime
-| Thời điểm xảy ra lỗi
+| Thời điểm xảy ra lỗi (ISO-8601)
 
 | `status`
 | number
@@ -74,12 +84,10 @@ Các field có giá trị `null` sẽ bị ẩn khỏi JSON.
 
 | `message`
 | string
-| Thông báo lỗi chung để hiển thị cho người dùng
-
-| `details`
-| map<string, string>
-| Dùng khi lỗi Validation (400). Key là tên field, Value là nội dung lỗi.
+| Thông báo lỗi chung
 |===
+
+'''
 
 include::auth_api.adoc[Auth API]
 
@@ -92,4 +100,3 @@ include::forum_api.adoc[Forum API]
 include::assignment_api.adoc[Assigment API]
 
 include::question_api.adoc[Question API]
-

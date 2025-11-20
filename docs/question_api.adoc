@@ -61,9 +61,9 @@ Lấy danh sách câu hỏi thuộc một assignment.
 
 _Method_
 
-[source]
+[source,subs="attributes+"]
 ----
-GET /api/assignment/5/question
+GET {api-base}/assignment/5/question
 ----
 
 _Query params_
@@ -72,7 +72,7 @@ _Query params_
 |===
 | Tham số | Kiểu   | Bắt buộc | Ghi chú
 
-| `active`| bool   | no       | Nếu `true` chỉ lấy câu hỏi `isActive = true`
+| `active`| boolean | no      | Nếu `true` chỉ lấy câu hỏi `isActive = true`
 |===
 
 *Response*
@@ -145,9 +145,9 @@ Lấy chi tiết một câu hỏi.
 
 *Request*
 
-[source]
+[source,subs="attributes+"]
 ----
-GET /api/assignment/5/question/101
+GET {api-base}/assignment/5/question/101
 ----
 
 *Response*
@@ -209,9 +209,9 @@ Tạo mới câu hỏi cho một assignment.
 
 _Method_
 
-[source]
+[source,subs="attributes+"]
 ----
-POST /api/assignment/5/question
+POST {api-base}/assignment/5/question
 ----
 
 _Headers_
@@ -219,7 +219,7 @@ _Headers_
 [source]
 ----
 Content-Type: application/json
-Cookie: JSESSIONID=abc123xyz;
+Authorization: Bearer <accessToken>
 ----
 
 _Body (MULTIPLE_CHOICE)_
@@ -256,15 +256,15 @@ _Data Constraints_
 
 [cols="2,2,3,5",options="header"]
 |===
-| Trường          | Kiểu            | Bắt buộc | Ghi chú
+| Trường                 | Kiểu          | Bắt buộc | Ghi chú
 
-| `type`          | enum            | yes      | `MULTIPLE_CHOICE` / `SHORT_ANSWER`
-| `content`       | string          | yes      | Nội dung câu hỏi
-| `correctAnswer` | string          | no       | Có thể `null` nếu chấm tay
-| `score`         | number          | no       | Mặc định = 1
-| `options`       | array<object>   | no       | Bắt buộc nếu `type = MULTIPLE_CHOICE`
-| `options[].optionKey` | string    | yes | Ví dụ `"A"`, `"B"`
-| `options[].content`   | string    | yes | Nội dung lựa chọn
+| `type`                 | enum          | yes      | `MULTIPLE_CHOICE` / `SHORT_ANSWER`
+| `content`              | string        | yes      | Nội dung câu hỏi
+| `correctAnswer`        | string        | no       | Có thể `null` nếu chấm tay
+| `score`                | number        | no       | Mặc định = 1
+| `options`              | array<object> | no       | Bắt buộc nếu `type = MULTIPLE_CHOICE`
+| `options[].optionKey`  | string        | yes      | Ví dụ `"A"`, `"B"`
+| `options[].content`    | string        | yes      | Nội dung lựa chọn
 |===
 
 *Response*
@@ -299,11 +299,7 @@ _400 Bad Request_
 {
   "timestamp": "2025-02-10T12:31:00",
   "status": 400,
-  "message": "Validation failed",
-  "details": {
-    "content": "must not be blank",
-    "options": "must not be empty for MULTIPLE_CHOICE"
-  }
+  "message": "Validation failed"
 }
 ----
 
@@ -337,9 +333,9 @@ _403 Forbidden_
 
 *Request*
 
-[source]
+[source,subs="attributes+"]
 ----
-PATCH /api/assignment/5/question/101
+PATCH {api-base}/assignment/5/question/101
 ----
 
 _Headers_
@@ -347,7 +343,7 @@ _Headers_
 [source]
 ----
 Content-Type: application/json
-Cookie: JSESSIONID=abc123xyz;
+Authorization: Bearer <accessToken>
 ----
 
 _Body_
@@ -403,10 +399,7 @@ _400 Bad Request_
 {
   "timestamp": "2025-02-11T09:01:00",
   "status": 400,
-  "message": "Validation failed",
-  "details": {
-    "score": "must be greater than 0"
-  }
+  "message": "Validation failed"
 }
 ----
 
@@ -442,21 +435,21 @@ Soft delete câu hỏi: set `is_active = false`.
 
 *Request*
 
+[source,subs="attributes+"]
+----
+DELETE {api-base}/assignment/5/question/101
+----
+
+_Headers_
+
 [source]
 ----
-DELETE /api/assignment/5/question/101
+Authorization: Bearer <accessToken>
 ----
 
 *Response*
 
-_200 OK_
-
-[source,json]
-----
-{
-  "message": "Delete success"
-}
-----
+_204 No content_
 
 _404 Not Found_
 

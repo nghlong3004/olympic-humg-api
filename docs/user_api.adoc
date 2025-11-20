@@ -42,20 +42,20 @@ Các field có giá trị `null` sẽ bị ẩn khỏi JSON.
 
 ==== GET /user/me
 
-Lấy thông tin user dựa trên session hiện tại.
+Lấy thông tin user dựa trên token hiện tại.
 
 *Request*
 
-[source]
+[source,subs="attributes+"]
 ----
-GET /api/user/me
+GET {api-base}user/me
 ----
 
-Browser gửi cookie tự động:
+_Headers_
 
 [source]
 ----
-Cookie: JSESSIONID=abc123xyz;
+Authorization: Bearer <accessToken>
 ----
 
 *Response*
@@ -99,13 +99,13 @@ _401 Unauthorized_
 ==== PATCH /user/me
 
 Cập nhật profile của user đang đăng nhập.
-Không cho phép cập nhật: `email`, `role`, `isActive` qua API này.
+Không cho phép cập nhật: `email`, `role`, `isActive`.
 
 *Request*
 
-[source]
+[source,subs="attributes+"]
 ----
-PATCH /api/user/me
+PATCH {api-base}user/me
 ----
 
 _Headers_
@@ -113,7 +113,7 @@ _Headers_
 [source]
 ----
 Content-Type: application/json
-Cookie: JSESSIONID=abc123xyz;
+Authorization: Bearer <accessToken>
 ----
 
 _Body_
@@ -177,11 +177,7 @@ _400 Bad Request_
 {
   "timestamp": "2025-02-11T09:00:00",
   "status": 400,
-  "message": "Validation failed",
-  "details": {
-    "firstName": "must not be blank",
-    "phone": "invalid phone number format"
-  }
+  "message": "Validation failed"
 }
 ----
 
@@ -206,9 +202,9 @@ Lấy thông tin một user khác (Public profile).
 
 *Request*
 
-[source]
+[source,subs="attributes+"]
 ----
-GET /api/user/42
+GET {api-base}user/42
 ----
 
 *Response*
@@ -266,9 +262,9 @@ Tìm kiếm user theo `firstName` + `lastName`, có phân trang.
 
 *Request*
 
-[source]
+[source,subs="attributes+"]
 ----
-GET /api/user?keyword=long&page=0&size=10
+GET {api-base}user?keyword=long&page=0&size=10
 ----
 
 _Query params_

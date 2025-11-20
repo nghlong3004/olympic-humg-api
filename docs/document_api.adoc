@@ -47,9 +47,9 @@ Upload dùng `multipart/form-data`.
 
 _Method_
 
-[source]
+[source,subs="attributes+"]
 ----
-POST /api/document
+POST {api-base}/document
 ----
 
 _Headers_
@@ -57,7 +57,7 @@ _Headers_
 [source]
 ----
 Content-Type: multipart/form-data
-Cookie: JSESSIONID=abc123xyz;
+Authorization: Bearer <accessToken>
 ----
 
 _Body_
@@ -101,11 +101,7 @@ _400 Bad Request_
 {
   "timestamp": "2025-02-10T12:30:00",
   "status": 400,
-  "message": "Validation failed",
-  "details": {
-    "title": "must not be blank",
-    "file": "is required"
-  }
+  "message": "Validation failed"
 }
 ----
 
@@ -132,9 +128,9 @@ Lấy danh sách tài liệu, hỗ trợ phân trang và filter cơ bản.
 
 _Method_
 
-[source]
+[source,subs="attributes+"]
 ----
-GET /api/document
+GET {api-base}/document
 ----
 
 _Query params_
@@ -153,10 +149,10 @@ _Query params_
 
 _Example_
 
-[source]
+[source,subs="attributes+"]
 ----
-GET /api/document?page=0&size=10
-GET /api/document?subject=Math&keyword=on%20tap
+GET {api-base}/document?page=0&size=10
+GET {api-base}/document?subject=Math&keyword=on%20tap
 ----
 
 *Response*
@@ -221,9 +217,9 @@ Lấy chi tiết một tài liệu theo `documentId`.
 
 *Request*
 
-[source]
+[source,subs="attributes+"]
 ----
-GET /api/document/10
+GET {api-base}/document/10
 ----
 
 *Response*
@@ -280,9 +276,9 @@ Only the owner (creator) or ADMIN is allowed to edit.
 
 *Request*
 
-[source]
+[source,subs="attributes+"]
 ----
-PATCH /api/document/10
+PATCH {api-base}/document/10
 ----
 
 _Headers_
@@ -290,7 +286,7 @@ _Headers_
 [source]
 ----
 Content-Type: application/json
-Cookie: JSESSIONID=abc123xyz;
+Authorization: Bearer <accessToken>
 ----
 
 _Body_
@@ -348,10 +344,7 @@ _400 Bad Request_
 {
   "timestamp": "2025-02-11T09:00:00",
   "status": 400,
-  "message": "Validation failed",
-  "details": {
-    "title": "size must be between 1 and 55"
-  }
+  "message": "Validation failed"
 }
 ----
 
@@ -377,9 +370,16 @@ Chỉ `owner` hoặc `ADMIN` được phép xoá.
 
 *Request*
 
+[source,subs="attributes+"]
+----
+DELETE {api-base}/document/10
+----
+
+_Headers_
+
 [source]
 ----
-DELETE /api/document/10
+Authorization: Bearer <accessToken>
 ----
 
 *Response*
