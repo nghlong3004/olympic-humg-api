@@ -10,7 +10,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import vn.edu.humg.olympic.constant.ApplicationConstant;
-import vn.edu.humg.olympic.exception.UnauthorizedRequestException;
 import vn.edu.humg.olympic.model.request.LoginRequest;
 import vn.edu.humg.olympic.model.request.RegisterRequest;
 import vn.edu.humg.olympic.model.response.LoginResponse;
@@ -53,17 +52,13 @@ public class AuthController {
     public void logout(HttpServletRequest request,
                        HttpServletResponse response) {
         HttpSession session = request.getSession(false);
-
-        if (session == null) {
-            throw new UnauthorizedRequestException("Not authenticated");
-        }
-
+        
         session.invalidate();
 
         Cookie cookie = new Cookie("JSESSIONID", null);
         cookie.setPath("/");
         cookie.setHttpOnly(true);
-        cookie.setSecure(true);
+        cookie.setSecure(false);
         cookie.setMaxAge(0);
         response.addCookie(cookie);
     }
