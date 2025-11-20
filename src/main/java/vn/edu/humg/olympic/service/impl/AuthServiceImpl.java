@@ -5,7 +5,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import vn.edu.humg.olympic.exception.BadRequestException;
 import vn.edu.humg.olympic.model.User;
-import vn.edu.humg.olympic.model.UserRole;
 import vn.edu.humg.olympic.model.request.LoginRequest;
 import vn.edu.humg.olympic.model.request.RegisterRequest;
 import vn.edu.humg.olympic.model.response.LoginResponse;
@@ -27,22 +26,7 @@ public class AuthServiceImpl implements AuthService {
                           throw new BadRequestException("Email already exists");
                       });
 
-        User user = User.builder()
-                        .firstName(request.firstName())
-                        .lastName(request.lastName())
-                        .email(request.email())
-                        .passwordHash(passwordEncoder.encode(request.password()))
-                        .gender(request.gender())
-                        .birthday(request.birthday())
-                        .role(UserRole.STUDENT)
-                        .phone(request.phone())
-                        .universityName(request.universityName())
-                        .facultyName(request.facultyName())
-                        .avatarUrl(null)
-                        .isActive(true)
-                        .build();
-
-        userRepository.insert(user);
+        userRepository.insert(RegisterRequest.from(request, passwordEncoder.encode(request.password())));
     }
 
     @Override
