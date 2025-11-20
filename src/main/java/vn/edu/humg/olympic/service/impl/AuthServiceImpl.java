@@ -6,7 +6,9 @@ import org.springframework.stereotype.Service;
 import vn.edu.humg.olympic.exception.BadRequestException;
 import vn.edu.humg.olympic.model.User;
 import vn.edu.humg.olympic.model.UserRole;
+import vn.edu.humg.olympic.model.request.LoginRequest;
 import vn.edu.humg.olympic.model.request.RegisterRequest;
+import vn.edu.humg.olympic.model.response.LoginResponse;
 import vn.edu.humg.olympic.repository.UserRepository;
 import vn.edu.humg.olympic.service.AuthService;
 
@@ -42,4 +44,21 @@ public class AuthServiceImpl implements AuthService {
 
         userRepository.insert(user);
     }
+
+    @Override
+    public LoginResponse login(LoginRequest request) {
+        User user = userRepository.findByEmail(request.email())
+                                  .orElseThrow(() -> new BadRequestException("Bad credentials"));
+
+        if (!passwordEncoder.matches(request.password(), user.getPasswordHash())) {
+            throw new BadRequestException("Bad credentials");
+        }
+
+        if (Boolean.FALSE.equals(user.getIsActive())) {
+            throw new BadRequestException("User account is disabled");
+        }
+
+        return LoginResponse.from(user);
+    }
+
 }
