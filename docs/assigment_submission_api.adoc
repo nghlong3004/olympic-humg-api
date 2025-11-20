@@ -41,9 +41,9 @@ Sinh viên nộp bài cho một assignment.
 
 _Method_
 
-[source]
+[source,subs="attributes+"]
 ----
-POST /api/assignment/5/submission
+POST {api-base}/assignment/5/submission
 ----
 
 _Headers_
@@ -51,7 +51,7 @@ _Headers_
 [source]
 ----
 Content-Type: application/json
-Cookie: JSESSIONID=abc123xyz;
+Authorization: Bearer <accessToken>
 ----
 
 _Body_
@@ -85,10 +85,7 @@ _400 Bad Request_
 {
   "timestamp": "2025-03-02T20:16:00",
   "status": 400,
-  "message": "Validation failed",
-  "details": {
-    "status": "Invalid status transition"
-  }
+  "message": "Invalid status transition"
 }
 ----
 
@@ -124,9 +121,16 @@ Sinh viên xem thông tin bài nộp của chính mình cho assignment đó.
 
 *Request*
 
+[source,subs="attributes+"]
+----
+GET {api-base}/assignment/5/submission/me
+----
+
+_Headers_
+
 [source]
 ----
-GET /api/assignment/5/submission/me
+Authorization: Bearer <accessToken>
 ----
 
 *Response*
@@ -178,9 +182,9 @@ Giảng viên hoặc admin xem danh sách bài nộp cho một assignment.
 
 *Request*
 
-[source]
+[source,subs="attributes+"]
 ----
-GET /api/assignment/5/submission?page=0&size=20&status=SUBMITTED
+GET {api-base}/assignment/5/submission?page=0&size=20&status=SUBMITTED
 ----
 
 _Query params_
@@ -249,9 +253,9 @@ Giảng viên/ADMIN chấm bài: cập nhật `scoreTotal` và trạng thái `st
 
 *Request*
 
-[source]
+[source,subs="attributes+"]
 ----
-PATCH /api/assignment/submission/1000
+PATCH {api-base}/assignment/submission/1000
 ----
 
 _Headers_
@@ -259,7 +263,7 @@ _Headers_
 [source]
 ----
 Content-Type: application/json
-Cookie: JSESSIONID=abc123xyz;
+Authorization: Bearer <accessToken>
 ----
 
 _Body_
@@ -299,10 +303,7 @@ _400 Bad Request_
 {
   "timestamp": "2025-03-03T10:01:00",
   "status": 400,
-  "message": "Validation failed",
-  "details": {
-    "scoreTotal": "Score cannot be negative"
-  }
+  "message": "Score cannot be negative"
 }
 ----
 

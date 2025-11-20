@@ -45,9 +45,9 @@ Giảng viên/Admin tạo một assignment mới.
 
 _Method_
 
-[source]
+[source,subs="attributes+"]
 ----
-POST /api/assignment
+POST {api-base}/assignment
 ----
 
 _Headers_
@@ -55,7 +55,7 @@ _Headers_
 [source]
 ----
 Content-Type: application/json
-Cookie: JSESSIONID=abc123xyz;
+Authorization: Bearer <accessToken>
 ----
 
 _Body_
@@ -111,11 +111,7 @@ _400 Bad Request_
 {
   "timestamp": "2025-02-10T12:31:00",
   "status": 400,
-  "message": "Validation failed",
-  "details": {
-    "title": "must not be blank",
-    "startTime": "must be a valid date"
-  }
+  "message": "Validation failed"
 }
 ----
 
@@ -142,9 +138,9 @@ Lấy danh sách assignment, có phân trang và filter cơ bản.
 
 _Method_
 
-[source]
+[source,subs="attributes+"]
 ----
-GET /api/assignment
+GET {api-base}/assignment
 ----
 
 _Query params_
@@ -164,12 +160,12 @@ _Query params_
 
 _Example_
 
-[source]
+[source,subs="attributes+"]
 ----
-GET /api/assignment?page=0&size=10
-GET /api/assignment?subject=Math&page=0&size=10
-GET /api/assignment?ownerId=42&active=true&page=0&size=20
-GET /api/assignment?fromStart=2025-03-01T00:00:00&toEnd=2025-03-31T23:59:59
+GET {api-base}/assignment?page=0&size=10
+GET {api-base}/assignment?subject=Math&page=0&size=10
+GET {api-base}/assignment?ownerId=42&active=true&page=0&size=20
+GET {api-base}/assignment?fromStart=2025-03-01T00:00:00&toEnd=2025-03-31T23:59:59
 ----
 
 *Response*
@@ -220,9 +216,9 @@ Lấy chi tiết một assignment theo `assignmentId`.
 
 *Request*
 
-[source]
+[source,subs="attributes+"]
 ----
-GET /api/assignment/5
+GET {api-base}/assignment/5
 ----
 
 *Response*
@@ -277,9 +273,9 @@ Cho phép cập nhật metadata của assignment.
 
 *Request*
 
-[source]
+[source,subs="attributes+"]
 ----
-PATCH /api/assignment/5
+PATCH {api-base}/assignment/5
 ----
 
 _Headers_
@@ -287,7 +283,7 @@ _Headers_
 [source]
 ----
 Content-Type: application/json
-Cookie: JSESSIONID=abc123xyz;
+Authorization: Bearer <accessToken>
 ----
 
 _Body_
@@ -348,10 +344,7 @@ _400 Bad Request_
 {
   "timestamp": "2025-02-11T09:01:00",
   "status": 400,
-  "message": "Validation failed",
-  "details": {
-    "startTime": "Start time must be before End time"
-  }
+  "message": "Start time must be before end time"
 }
 ----
 
@@ -376,21 +369,21 @@ Soft delete assignment: set `is_active = false`.
 
 *Request*
 
+[source,subs="attributes+"]
+----
+DELETE {api-base}/assignment/5
+----
+
+_Headers_
+
 [source]
 ----
-DELETE /api/assignment/5
+Authorization: Bearer <accessToken>
 ----
 
 *Response*
 
-_200 OK_
-
-[source,json]
-----
-{
-  "message": "Delete success"
-}
-----
+_204 No content_
 
 _404 Not Found_
 
