@@ -14,6 +14,8 @@ Module `Assignment Submission` chịu trách nhiệm:
 
 === AssignmentSubmissionResponse Data Type
 
+Các field có giá trị `null` sẽ bị ẩn khỏi JSON.
+
 [cols="2,2,6",options="header"]
 |===
 | Trường        | Kiểu     | Ghi chú
@@ -22,9 +24,9 @@ Module `Assignment Submission` chịu trách nhiệm:
 | `assignmentId`| number   | ID assignment
 | `studentId`   | number   | ID sinh viên
 | `status`      | enum     | `PENDING`, `SUBMITTED`, `GRADED`
-| `scoreTotal`  | number   | Tổng điểm, có thể null nếu chưa chấm
+| `scoreTotal`  | number   | Tổng điểm
 | `submitted`   | datetime | Thời điểm nộp bài
-| `graded`      | datetime | Thời điểm chấm xong, có thể null
+| `graded`      | datetime | Thời điểm chấm xong
 |===
 
 '''
@@ -34,9 +36,6 @@ Module `Assignment Submission` chịu trách nhiệm:
 ==== POST /assignment/{assignmentId}/submission
 
 Sinh viên nộp bài cho một assignment.
-Tuỳ business logic, hệ thống sẽ:
-* Tạo mới submission nếu chưa tồn tại.
-* Hoặc cập nhật submission hiện tại và chuyển trạng thái sang `SUBMITTED`.
 
 *Request*
 
@@ -75,9 +74,7 @@ _201 Created_
   "assignmentId": 5,
   "studentId": 99,
   "status": "SUBMITTED",
-  "scoreTotal": null,
-  "submitted": "2025-03-02T20:15:00",
-  "graded": null
+  "submitted": "2025-03-02T20:15:00"
 }
 ----
 
@@ -88,9 +85,9 @@ _400 Bad Request_
 {
   "timestamp": "2025-03-02T20:16:00",
   "status": 400,
-  "message": "Dữ liệu không hợp lệ",
+  "message": "Validation failed",
   "details": {
-    "status": "Trạng thái không hợp lệ"
+    "status": "Invalid status transition"
   }
 }
 ----
@@ -102,8 +99,7 @@ _404 Not Found_
 {
   "timestamp": "2025-03-02T20:16:00",
   "status": 404,
-  "message": "Assignment not found",
-  "details": null
+  "message": "Assignment not found"
 }
 ----
 
@@ -114,8 +110,7 @@ _403 Forbidden_
 {
   "timestamp": "2025-03-02T20:16:00",
   "status": 403,
-  "message": "Access denied",
-  "details": null
+  "message": "Access denied"
 }
 ----
 
@@ -158,8 +153,7 @@ _404 Not Found_
 {
   "timestamp": "2025-03-02T20:20:00",
   "status": 404,
-  "message": "Submission not found",
-  "details": null
+  "message": "Submission not found"
 }
 ----
 
@@ -170,8 +164,7 @@ _401 Unauthorized_
 {
   "timestamp": "2025-03-02T20:20:00",
   "status": 401,
-  "message": "Not authenticated",
-  "details": null
+  "message": "Not authenticated"
 }
 ----
 
@@ -214,9 +207,7 @@ _200 OK_
       "assignmentId": 5,
       "studentId": 99,
       "status": "SUBMITTED",
-      "scoreTotal": null,
-      "submitted": "2025-03-02T20:15:00",
-      "graded": null
+      "submitted": "2025-03-02T20:15:00"
     }
   ],
   "page": 0,
@@ -233,8 +224,7 @@ _404 Not Found_
 {
   "timestamp": "2025-03-02T20:25:00",
   "status": 404,
-  "message": "Assignment not found",
-  "details": null
+  "message": "Assignment not found"
 }
 ----
 
@@ -245,8 +235,7 @@ _403 Forbidden_
 {
   "timestamp": "2025-03-02T20:25:00",
   "status": 403,
-  "message": "Access denied",
-  "details": null
+  "message": "Access denied"
 }
 ----
 
@@ -310,9 +299,9 @@ _400 Bad Request_
 {
   "timestamp": "2025-03-03T10:01:00",
   "status": 400,
-  "message": "Data trash",
+  "message": "Validation failed",
   "details": {
-    "scoreTotal": "Điểm số không được âm"
+    "scoreTotal": "Score cannot be negative"
   }
 }
 ----
@@ -324,8 +313,7 @@ _404 Not Found_
 {
   "timestamp": "2025-03-03T10:01:00",
   "status": 404,
-  "message": "Submission not found",
-  "details": null
+  "message": "Submission not found"
 }
 ----
 
@@ -336,7 +324,6 @@ _403 Forbidden_
 {
   "timestamp": "2025-03-03T10:01:00",
   "status": 403,
-  "message": "Access denied",
-  "details": null
+  "message": "Access denied"
 }
 ----

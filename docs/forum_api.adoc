@@ -1,6 +1,7 @@
 == Forum API
 
 '''
+
 === Introduction
 
 Module `Forum` chịu trách nhiệm:
@@ -13,15 +14,15 @@ Module `Forum` chịu trách nhiệm:
 
 === ThreadResponse Data Type
 
-Dùng cho các API trả về thông tin thread.
+Các field có giá trị `null` sẽ bị ẩn khỏi JSON.
 
 [cols="2,2,6",options="header"]
 |===
 | Trường         | Kiểu     | Ghi chú
 
 | `id`           | number   | ID thread
-| `title`        | string   | Tiêu đề (<= 55 ký tự)
-| `content`      | string   | Nội dung chính của thread
+| `title`        | string   | Tiêu đề
+| `content`      | string   | Nội dung chính
 | `type`         | enum     | `DISCUSSION`, `QUESTION`, `ANNOUNCEMENT`
 | `isPinned`     | boolean  | Có đang được ghim hay không
 | `isActive`     | boolean  | `true` nếu còn hiệu lực
@@ -32,7 +33,7 @@ Dùng cho các API trả về thông tin thread.
 
 === PostResponse Data Type
 
-Dùng cho các API trả về thông tin post trong thread.
+Các field có giá trị `null` sẽ bị ẩn khỏi JSON.
 
 [cols="2,2,6",options="header"]
 |===
@@ -72,7 +73,7 @@ _Query params_
 
 | `page`    | number | no       | Mặc định = 0
 | `size`    | number | no       | Mặc định = 20
-| `type`    | enum   | no       | Filter theo `DISCUSSION` / `QUESTION` / `ANNOUNCEMENT`
+| `type`    | enum   | no       | `DISCUSSION` / `QUESTION` / `ANNOUNCEMENT`
 | `keyword` | string | no       | Tìm trong `title` và `content`
 | `ownerId` | number | no       | Filter theo người tạo thread
 | `pinned`  | bool   | no       | Nếu `true` chỉ lấy thread đang ghim
@@ -83,8 +84,7 @@ _Ví dụ_
 [source]
 ----
 GET /api/forum/thread?page=0&size=10
-GET /api/forum/thread?type=QUESTION&keyword=limit&page=0&size=5
-GET /api/forum/thread?ownerId=42&page=0&size=20
+GET /api/forum/thread?type=QUESTION&keyword=limit
 ----
 
 *Response*
@@ -121,8 +121,7 @@ _401 Unauthorized_
 {
   "timestamp": "2025-02-10T12:35:00",
   "status": 401,
-  "message": "Not authenticated",
-  "details": null
+  "message": "Not authenticated"
 }
 ----
 
@@ -167,20 +166,18 @@ _404 Not Found_
 {
   "timestamp": "2025-02-10T12:40:00",
   "status": 404,
-  "message": "Thread not found",
-  "details": null
+  "message": "Thread not found"
 }
 ----
 
-_403 FORBIDDEN_
+_403 Forbidden_
 
 [source,json]
 ----
 {
   "timestamp": "2025-02-10T12:40:00",
   "status": 403,
-  "message": "Access denied",
-  "details": null
+  "message": "Access denied"
 }
 ----
 
@@ -228,7 +225,7 @@ _Data Constraints_
 
 | `title`  | string (1..55) | yes      | Tiêu đề thread
 | `content`| string         | yes      | Nội dung thread
-| `type`   | enum           | no       | `DISCUSSION` / `QUESTION` / `ANNOUNCEMENT`, mặc định `DISCUSSION`
+| `type`   | enum           | no       | Mặc định `DISCUSSION`
 |===
 
 *Response*
@@ -257,7 +254,7 @@ _400 Bad Request_
 {
   "timestamp": "2025-02-10T12:30:00",
   "status": 400,
-  "message": "Dữ liệu không hợp lệ",
+  "message": "Validation failed",
   "details": {
     "title": "must not be blank",
     "content": "must not be blank"
@@ -265,15 +262,14 @@ _400 Bad Request_
 }
 ----
 
-_403 FORBIDDEN_
+_403 Forbidden_
 
 [source,json]
 ----
 {
   "timestamp": "2025-02-10T12:30:00",
   "status": 403,
-  "message": "Access denied",
-  "details": null
+  "message": "Access denied"
 }
 ----
 
@@ -342,22 +338,21 @@ _400 Bad Request_
 {
   "timestamp": "2025-02-11T09:00:00",
   "status": 400,
-  "message": "Invalid input",
+  "message": "Validation failed",
   "details": {
     "title": "size must be between 1 and 55"
   }
 }
 ----
 
-_403 FORBIDDEN_
+_403 Forbidden_
 
 [source,json]
 ----
 {
   "timestamp": "2025-02-11T09:00:00",
   "status": 403,
-  "message": "Access denied",
-  "details": null
+  "message": "Access denied"
 }
 ----
 
@@ -368,7 +363,6 @@ _403 FORBIDDEN_
 ==== DELETE /forum/thread/{threadId}
 
 Soft delete thread: đánh dấu `is_active = false`.
-Các `forum_post` có thể vẫn giữ, hoặc logic ẩn theo backend.
 
 *Request*
 
@@ -395,20 +389,18 @@ _404 Not Found_
 {
   "timestamp": "2025-02-11T10:00:00",
   "status": 404,
-  "message": "Thread not found",
-  "details": null
+  "message": "Thread not found"
 }
 ----
 
-_403 FORBIDDEN_
+_403 Forbidden_
 
 [source,json]
 ----
 {
   "timestamp": "2025-02-11T10:00:00",
   "status": 403,
-  "message": "Access denied",
-  "details": null
+  "message": "Access denied"
 }
 ----
 
@@ -469,8 +461,7 @@ _404 Not Found_
 {
   "timestamp": "2025-02-10T13:05:00",
   "status": 404,
-  "message": "Thread not found",
-  "details": null
+  "message": "Thread not found"
 }
 ----
 
@@ -539,7 +530,7 @@ _400 Bad Request_
 {
   "timestamp": "2025-02-10T13:00:00",
   "status": 400,
-  "message": "Dữ liệu không hợp lệ",
+  "message": "Validation failed",
   "details": {
     "content": "must not be blank"
   }
@@ -553,8 +544,7 @@ _404 Not Found_
 {
   "timestamp": "2025-02-10T13:00:00",
   "status": 404,
-  "message": "Thread not found",
-  "details": null
+  "message": "Thread not found"
 }
 ----
 
@@ -565,8 +555,7 @@ _401 Unauthorized_
 {
   "timestamp": "2025-02-10T13:00:00",
   "status": 401,
-  "message": "Not authenticated",
-  "details": null
+  "message": "Not authenticated"
 }
 ----
 
@@ -614,15 +603,14 @@ _200 OK_
 }
 ----
 
-_403 FORBIDDEN_
+_403 Forbidden_
 
 [source,json]
 ----
 {
   "timestamp": "2025-02-11T09:10:00",
   "status": 403,
-  "message": "Access denied",
-  "details": null
+  "message": "Access denied"
 }
 ----
 
@@ -652,14 +640,13 @@ _200 OK_
 }
 ----
 
-_403 FORBIDDEN_
+_403 Forbidden_
 
 [source,json]
 ----
 {
   "timestamp": "2025-02-11T10:00:00",
   "status": 403,
-  "message": "Access denied",
-  "details": null
+  "message": "Access denied"
 }
 ----
