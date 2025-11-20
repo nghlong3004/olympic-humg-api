@@ -1,7 +1,7 @@
 = API Documentation
 :doctype: book
 :toc:
-:
+:sectnums:
 :toclevels: 2
 
 '''

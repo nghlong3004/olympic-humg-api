@@ -372,6 +372,7 @@ _403 Forbidden_
 
 ==== DELETE /assignment/{assignmentId}
 
+Soft delete assignment: set `is_active = false`.
 
 *Request*
 

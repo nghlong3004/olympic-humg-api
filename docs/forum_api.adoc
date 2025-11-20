@@ -79,7 +79,7 @@ _Query params_
 | `pinned`  | bool   | no       | Nếu `true` chỉ lấy thread đang ghim
 |===
 
-_Ví dụ_
+_Example_
 
 [source]
 ----
@@ -362,7 +362,8 @@ _403 Forbidden_
 
 ==== DELETE /forum/thread/{threadId}
 
-Soft delete thread: đánh dấu `is_active = false`.
+marks `is_active = false` for the thread.
+Associated `forum_post` entries may remain, or be hidden according to backend logic.
 
 *Request*
 

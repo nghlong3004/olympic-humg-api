@@ -151,7 +151,7 @@ _Query params_
 | `accessType`| enum   | no       | `PUBLIC` / `PRIVATE`
 |===
 
-_Ví dụ_
+_Example_
 
 [source]
 ----
@@ -275,7 +275,8 @@ _403 Forbidden_
 
 ==== PATCH /document/{documentId}
 
-Cho phép cập nhật metadata của tài liệu (không upload lại file).
+Allows updating document metadata (without re-uploading the file).
+Only the owner (creator) or ADMIN is allowed to edit.
 
 *Request*
 
