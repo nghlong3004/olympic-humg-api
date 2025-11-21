@@ -1,0 +1,19 @@
+spring:
+  config:
+    activate:
+      on-profile: local
+  data:
+    redis:
+      cluster:
+        nodes: localhost:7379
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      security:
+        protocol: PLAINTEXT
+    producer:
+      security:
+        protocol: PLAINTEXT
+
+logging:
+  config: classpath:log4j2-local.xml

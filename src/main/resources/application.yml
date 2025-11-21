@@ -1,0 +1,120 @@
+spring:
+  main:
+    allow-bean-definition-overriding: true
+  profiles:
+    active: local
+  application:
+    name: template
+  # You need to change this port for tunneling
+  # ssh -L localhost:35213:postgres-db.sa.internal:3521 -l developer 18.185.21.210 -p 6800 -i /pem/sad_eucentral1.pem
+  data:
+    redis:
+      cluster:
+        nodes: redis:7379
+        max-redirects: 3
+      client-type: lettuce
+      connect-timeout: 200ms
+  amazon:
+    aws:
+      access-key: ${{ secrets.AWS_ACCESS_KEY }}
+      secret-key: ${{ secrets.AWS_SECRET_KEY }}
+    dynamodb:
+      endpoint: http://localhost:8000
+      region: us-east-1
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    main:
+      url: jdbc:postgresql://localhost:5432/postgres?sslUse=false
+      username: postgres
+      password: "p@ssw0rd"
+    replica:
+      url: jdbc:postgresql://localhost:5432/postgres?sslUse=false
+      username: postgres
+      password: "p@ssw0rd"
+  jpa:
+    database: postgresql
+    generate-ddl: false
+    hibernate:
+      naming:
+        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+      ddl-auto: none
+    show-sql: false
+    properties:
+      hibernate.enable_lazy_load_no_trans: true
+      hibernate.format_sql: true
+  threads:
+    virtual:
+      enabled: true
+  kafka:
+    bootstrap-servers: localhost:9098 # Kafka cluster endpoints. It must be a comma separated list of host:port pairs at least three brokers for high availability
+    listener:
+      ack-mode: manual
+      concurrency: 1 # concurrency for consumer
+    consumer:
+      group-id: group-id # service name
+      auto-offset-reset: earliest # earliest/latest - start reading from the beginning of the topic or latest message
+      enable-auto-commit: false
+      fetch-max-wait: 500 # maximum time in ms to wait for data to be fetched from kafka broker in ms (500ms)
+      fetch-min-size: 1 # minimum amount of data to fetch from kafka broker in bytes (1 byte)
+      properties:
+        sasl.mechanism: AWS_MSK_IAM
+        sasl.jaas.config: software.amazon.msk.auth.iam.IAMLoginModule required;
+        sasl.client.callback.handler.class: software.amazon.msk.auth.iam.IAMClientCallbackHandler
+      security:
+        protocol: SASL_SSL
+    producer:
+      acks: all
+      compression-type: lz4
+      batch-size: 16384 # batch size in bytes (16KB) to be sent together as a single request to the broker
+      properties:
+        linger.ms: 20 # linger time in ms (20ms) to wait for more messages to fill the batch
+        sasl.mechanism: AWS_MSK_IAM
+        sasl.jaas.config: software.amazon.msk.auth.iam.IAMLoginModule required;
+        sasl.client.callback.handler.class: software.amazon.msk.auth.iam.IAMClientCallbackHandler
+      security:
+        protocol: SASL_SSL
+
+mybatis:
+  type-aliases-package: com.samsung.account.template.application.model,com.samsung.account.template.user.model
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, refresh
+      base-path: /
+      path-mapping:
+        health: /health
+  server:
+    base-path: /
+    port: 8080
+  statsd:
+    metrics:
+      export:
+        host: localhost
+        port: 8125
+        flavor: datadog
+        enabled: true
+
+server:
+  port: 8100
+  servlet:
+    context-path: /sample
+
+client:
+  config:
+    defaults:
+      connect-timeout: 5000
+      read-timeout: 5000
+  profile:
+    url: https://apigateway-sad-eucentral1.samsungospdev.com/v2/profile
+  auth:
+    url: https://apigateway-sad-eucentral1.samsungospdev.com/v2/auth
+
+sample:
+  client:
+    client-id: clientId
+    secret: dummy
+
+cors:
+  client: https://account.samsung.com

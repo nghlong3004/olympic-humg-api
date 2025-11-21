@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "mybatis-3-mapper.dtd">
+
+<mapper namespace="vn.edu.humg.application.ApplicationRepository">
+
+    <insert id="create" parameterType="vn.edu.humg.application.model.ApplicationInfo">
+        INSERT INTO sample_application (application_id, application_name)
+        VALUES (#{applicationId}, #{applicationName});
+    </insert>
+
+    <update id="update" parameterType="ApplicationInfo">
+        UPDATE sample_application
+        SET application_id = #{applicationId}
+        ,application_name = #{applicationName}
+        ,modified = NOW()
+        WHERE application_id = #{applicationId}
+    </update>
+
+    <delete id="delete">
+        DELETE from sample_application
+        WHERE application_id = #{id}
+    </delete>
+</mapper>
