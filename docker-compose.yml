@@ -8,6 +8,6 @@ services:
       - ./src/test/resources/schema.sql:/docker-entrypoint-initdb.d/00-schema.sql
       - ./src/test/resources/data.sql:/docker-entrypoint-initdb.d/01-data.sql
     environment:
-      POSTGRES_DATABASE: postgres
+      POSTGRES_DB: postgres
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: p@ssw0rd

@@ -93,7 +93,7 @@ CREATE TABLE question_option (
 
 CREATE TABLE assignment_submission (
                                        id            BIGSERIAL PRIMARY KEY,
-                                       assignment_id BIGINT NOT NULL REFERENCES assignment(id),
+                                       assignment_id BIGINT NOT NULL REFERENCES assignment(id) ON DELETE CASCADE,
                                        student_id    BIGINT NOT NULL REFERENCES user_humg(id),
                                        status        submission_status NOT NULL DEFAULT 'SUBMITTED',
                                        score_total   INT,
