@@ -47,16 +47,14 @@ public class LoggingFilter extends OncePerRequestFilter {
 
         try {
             filterChain.doFilter(request, response);
-            logAccessFields(request, response, start);
             COMMON_LOG.info("service={} method={} uri={} status={} ip={} request_size={} response_size={}", "api",
                             request.getMethod(), request.getRequestURI(), response.getStatus(), request.getRemoteAddr(),
                             request.getContentLengthLong(), response.getContentSize());
         } finally {
             MDC.clear();
+            response.copyBodyToResponse();
+            logAccessFields(request, response, start);
         }
-
-        logAccessFields(request, response, start);
-
     }
 
     private void logAccessFields(

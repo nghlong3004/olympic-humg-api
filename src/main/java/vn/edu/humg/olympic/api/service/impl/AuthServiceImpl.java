@@ -7,11 +7,11 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import vn.edu.humg.olympic.api.constant.APIConstant;
 import vn.edu.humg.olympic.api.converter.UserConverter;
 import vn.edu.humg.olympic.api.exception.ErrorCode;
 import vn.edu.humg.olympic.api.exception.ResourceException;
@@ -35,10 +35,15 @@ public class AuthServiceImpl implements AuthService {
 
     private final AuthenticationManager authenticationManager;
     private final TokenService tokenService;
-    private final UserDetailsService userDetailsService;
 
     @Value("${application.security.jwt.refresh-expiration}")
     private int refreshExpirationMinutes;
+    @Value("${application.security.jwt.refresh-name}")
+    private String name;
+    @Value("${application.security.cookie.secure}")
+    private boolean cookieSecure;
+    @Value("${application.security.cookie.same-site}")
+    private String sameSite;
 
     @Override
     @Transactional
@@ -58,7 +63,7 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public LoginResponse login(LoginRequest request) {
-        Authentication authentication = null;
+        Authentication authentication;
         try {
             authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(request.email(), request.password()));
@@ -69,12 +74,12 @@ public class AuthServiceImpl implements AuthService {
         String accessToken = tokenService.generateAccessToken(authentication);
         String refreshToken = tokenService.generateRefreshToken(authentication);
 
-        ResponseCookie refreshCookie = ResponseCookie.from("refresh_token", refreshToken)
+        ResponseCookie refreshCookie = ResponseCookie.from(name, refreshToken)
                                                      .httpOnly(true)
-                                                     .secure(false)
-                                                     .path("/api/auth")
+                                                     .secure(cookieSecure)
+                                                     .path(APIConstant.API_AUTH_PATH)
                                                      .maxAge(refreshExpirationMinutes * 60L)
-                                                     .sameSite("Strict")
+                                                     .sameSite(sameSite)
                                                      .build();
 
         return new LoginResponse(refreshCookie, new AuthResponse(accessToken));

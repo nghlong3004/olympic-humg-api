@@ -25,17 +25,35 @@ public enum HttpRequestAccessLogFields implements LogField<HttpServletRequest> {
     // Request (Optional)
     REQUEST_HEADER_REQUEST_ID("http.request.id", request -> request.getHeader("sa-request-id")),
     REQUEST_BODY_CONTENT("http.request.body.content", request -> {
+        final String cacheKey = "http.request.body.content.cache";
+        Object cached = request.getAttribute(cacheKey);
+        if (cached instanceof String) {
+            return (String) cached;
+        }
         if (request instanceof ContentCachingRequestWrapper requestWrapper) {
-            // request max size 10 bit
+            // request max size 1024 bytes (1 KB)
             final int maxSize = 1 << 10;
             String requestText = new String(requestWrapper.getContentAsByteArray(), StandardCharsets.UTF_8);
-            return requestText.length() > maxSize ? requestText.substring(0, maxSize) : requestText;
+            String result = requestText.length() > maxSize ? requestText.substring(0, maxSize) : requestText;
+            request.setAttribute(cacheKey, result);
+            return result;
         }
+        request.setAttribute(cacheKey, "");
         return "";
     }),
-    REQUEST_BODY_BYTES("http.request.body.bytes", request -> String.valueOf(REQUEST_BODY_CONTENT.getValue(request)
-                                                                                                .getBytes(
-                                                                                                        StandardCharsets.UTF_8).length)),
+    REQUEST_BODY_BYTES("http.request.body.bytes", request -> {
+        final String cacheKey = "http.request.body.content.cache";
+        Object cached = request.getAttribute(cacheKey);
+        String bodyContent;
+        if (cached instanceof String) {
+            bodyContent = (String) cached;
+        }
+        else {
+            // Compute and cache if not present
+            bodyContent = REQUEST_BODY_CONTENT.getValue(request);
+        }
+        return String.valueOf(bodyContent.getBytes(StandardCharsets.UTF_8).length);
+    }),
 
     // URL (Required)
     URL_PATH("url.path", HttpServletRequest::getRequestURI),
@@ -51,15 +69,16 @@ public enum HttpRequestAccessLogFields implements LogField<HttpServletRequest> {
     USER_AGENT_ORIGINAL("user_agent.original", request -> request.getHeader("User-Agent")),
     ;
 
-    @Getter
+    @Getter(onMethod_ = {@Override})
     private final String key;
     private final Function<HttpServletRequest, String> valueFunction;
 
+    @Override
     public String getValue(HttpServletRequest request) {
         return valueFunction.apply(request);
     }
 
-    static int getHeaderSize(HttpServletRequest request) {
+    public static int getHeaderSize(HttpServletRequest request) {
         int headerSize = 0;
         for (String name : Collections.list(request.getHeaderNames())) {
             String value = request.getHeader(name);

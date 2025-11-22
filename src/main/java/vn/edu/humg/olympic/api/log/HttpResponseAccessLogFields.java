@@ -20,14 +20,16 @@ public enum HttpResponseAccessLogFields implements LogField<HttpServletResponse>
         return null;
     }),
     RESPONSE_BODY_CONTENT("http.response.body.content", HttpResponseAccessLogFields::getBody),
-    RESPONSE_BODY_BYTES("http.response.body.bytes", response -> String.valueOf(RESPONSE_BODY_CONTENT.getValue(response)
-                                                                                                    .getBytes(
-                                                                                                            StandardCharsets.UTF_8).length));
+    RESPONSE_BODY_BYTES("http.response.body.bytes", response -> {
+        String body = getBody(response);
+        return String.valueOf(body.getBytes(StandardCharsets.UTF_8).length);
+    });
 
-    @Getter
+    @Getter(onMethod_ = {@Override})
     private final String key;
     private final Function<HttpServletResponse, String> valueFunction;
 
+    @Override
     public String getValue(HttpServletResponse response) {
         return valueFunction.apply(response);
     }
@@ -43,7 +45,7 @@ public enum HttpResponseAccessLogFields implements LogField<HttpServletResponse>
         int headerSize = 0;
         for (String name : response.getHeaderNames()) {
             String value = response.getHeader(name);
-            headerSize += name.length() + value.length() + 2; // \r\n
+            headerSize += name.length() + (value != null ? value.length() : 0) + 2; // \r\n
         }
         return headerSize;
     }

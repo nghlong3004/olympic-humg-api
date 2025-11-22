@@ -1,6 +1,5 @@
 package vn.edu.humg.olympic.api.controller;
 
-import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
@@ -39,7 +38,7 @@ public class AuthController {
     public ResponseEntity<AuthResponse> login(
             @Valid
             @RequestBody
-            LoginRequest request, HttpServletResponse servletResponse
+            LoginRequest request
     ) {
         var response = authService.login(request);
 

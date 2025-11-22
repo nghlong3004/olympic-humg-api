@@ -9,12 +9,11 @@ import org.springframework.http.HttpStatus;
 public enum ErrorCode {
 
     // 4xx
-    NOT_FOUND(HttpStatus.NOT_FOUND.value(), "Not Found", "NotFoundError"),
-    EMAIL_ALREADY(HttpStatus.CONFLICT.value(), "Email already exists.", "EmailAlready"),
-    INVALID_CREDENTIALS(HttpStatus.UNAUTHORIZED.value(), "Email or password is incorrect.", "InvalidCredentials"),
-
+    NOT_FOUND(HttpStatus.NOT_FOUND.value(), "NotFoundError", "Not Found"),
+    EMAIL_ALREADY(HttpStatus.CONFLICT.value(), "EmailAlready", "Email already exists."),
+    INVALID_CREDENTIALS(HttpStatus.UNAUTHORIZED.value(), "InvalidCredentials", "Email or password is incorrect."),
     // 5xx
-    INTERNAL_ERROR(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Internal Server Error",
+    INTERNAL_ERROR(HttpStatus.INTERNAL_SERVER_ERROR.value(), "InternalError",
                    "The server encountered an internal error or misconfiguration and was unable to complete your request.");
 
     private final int status;
