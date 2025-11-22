@@ -8,7 +8,7 @@ public enum ErrorCode {
 
     // 4xx
     NOT_FOUND(HttpStatus.NOT_FOUND.value(), "Not Found", "NotFoundError"),
-    EMAIL_ALREADY(HttpStatus.CONFLICT.value(), "Email is invalid or already exists.", "EmailAlready"),
+    EMAIL_ALREADY(HttpStatus.CONFLICT.value(), "Email already exists.", "EmailAlready"),
 
     // 5xx
     INTERNAL_ERROR(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Internal Server Error",
