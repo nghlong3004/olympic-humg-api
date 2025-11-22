@@ -9,7 +9,11 @@ public final class APIConstant {
 
     public static final String REGISTER = "/register";
 
+    public static final String LOGIN = "/login";
+
     public static final String API_REGISTER_PATH = API_AUTH_PATH + REGISTER;
+
+    public static final String API_LOGIN_PATH = API_AUTH_PATH + LOGIN;
 
     private APIConstant() {
         throw new UnsupportedOperationException("This class should never be instantiated");
